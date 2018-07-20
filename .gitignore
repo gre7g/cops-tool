@@ -1,6 +1,7 @@
 nvparams.dat
 *.pyc
 *.log
+.idea/
 
 # Virtual Environment
 env/
