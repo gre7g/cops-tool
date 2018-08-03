@@ -1,10 +1,11 @@
 """Framework for displaying graphics on a 128x64 OLED screen powered by the SSD1306 chip."""
 
 from built_ins import *
+from font_8x8 import set_xy
 
 try:
     # Fake import to appease PyCharm
-    from top_level import OLED_CS
+    from top_level import OLED_CS, OLED_DC
 except ImportError:
     pass
 
@@ -69,8 +70,7 @@ def clear_ram():
     set_column_address(0, 127)
     for i in xrange(SSD1306_COLS * SSD1306_ROWS / 128):
         send_data("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-    set_page_address(0, 7)
-    set_column_address(0, 127)
+    set_xy(0, 0)
 
 
 # Scrolling commands:
@@ -358,6 +358,7 @@ def connection_init(connection_type):
     elif connection_type == USE_SPI:
         setPinDir(OLED_CS, True)
         writePin(OLED_CS, True)
+        setPinDir(OLED_DC, True)
         spiInit(0, 0, True, False)
     else:
         print "Invalid connection type."
@@ -371,8 +372,10 @@ def send_command(command):
     if G_CONNECTION_TYPE == USE_I2C:
         i2cWrite(chr(SSD1306_ADDRESS) + chr(SELECT_CONTROL_BYTE) + chr(command), 10, False)
     else:
-        # spiWrite is actually appropriate, but broken!
-        spiXfer(chr(SELECT_CONTROL_BYTE | (command >> 1)) + chr((command << 7) & 0x80), 1)
+        writePin(OLED_DC, False)
+        writePin(OLED_CS, False)
+        spiWrite(chr(command))
+        writePin(OLED_CS, True)
 
 
 def send_data(data_string):
@@ -383,6 +386,7 @@ def send_data(data_string):
     if G_CONNECTION_TYPE == USE_I2C:
         i2cWrite(chr(SSD1306_ADDRESS) + chr(SELECT_DATA_BYTE) + data_string, 10, False)
     else:
-        for character in data_string:
-            byte_value = ord(character)
-            spiXfer(chr(byte_value >> 1) + chr((byte_value << 7) & 0x80), 1)
+        writePin(OLED_DC, True)
+        writePin(OLED_CS, False)
+        spiWrite(data_string)
+        writePin(OLED_CS, True)

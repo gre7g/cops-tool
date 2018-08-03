@@ -1,6 +1,14 @@
 """8x8 pixel font (7x7 usable pixels) based on Joystix font by typodermicfonts"""
-from ssd1306 import *
+try:
+    from ssd1306 import send_data, set_page_address, set_column_address
+except ImportError:
+    pass
 
+# Constants:
+BIT_DOUBLER = (
+    "\x00", "\x03", "\x0c", "\x0f", "\x30", "\x33", "\x3c", "\x3f",
+    "\xc0", "\xc3", "\xcc", "\xcf", "\xf0", "\xf3", "\xfc", "\xff"
+)
 FONT_8X8 = (
     "\x00\x00\x7F\x41\x41\x7F\x00\x00",  # CUSTOM_00 (box)
     "\x00\x00\x00\x00\x00\x00\x00\x00",  # CUSTOM_01
@@ -131,17 +139,49 @@ FONT_8X8 = (
     "\x00\x10\x08\x08\x10\x10\x08\x00",  # ~
 )
 
+# Globals:
+G_DRAW_X = 0
+G_DRAW_Y = 0
+
+
+def set_xy(x, y):
+    global G_DRAW_X, G_DRAW_Y
+
+    G_DRAW_X = x
+    G_DRAW_Y = y
+
 
 def print_8x8(string):
     """Prints the given string using a 8x8 pixel font.
 
     :param str string: String to print
     """
+    global G_DRAW_X
+
+    # Top half
+    set_page_address(G_DRAW_Y * 2, 7)
+    set_column_address(G_DRAW_X * 8, 127)
     for character in string:
         index = ord(character)
 
         # Unknown characters are replaced with CUSTOM_00:
-        if index > len(FONT_8X8):
-            index = 0
+        input_data = FONT_8X8[0 if index > len(FONT_8X8) else index]
 
-        send_data(FONT_8X8[index])
+        # Double the top half
+        for column_data in input_data:
+            send_data(BIT_DOUBLER[ord(column_data) & 0x0f])
+
+    # Bottom half
+    set_page_address((G_DRAW_Y * 2) + 1, 7)
+    set_column_address(G_DRAW_X * 8, 127)
+    for character in string:
+        index = ord(character)
+
+        # Unknown characters are replaced with CUSTOM_00:
+        input_data = FONT_8X8[0 if index > len(FONT_8X8) else index]
+
+        # Double the top half
+        for column_data in input_data:
+            send_data(BIT_DOUBLER[ord(column_data) >> 4])
+
+    G_DRAW_X += len(string)
