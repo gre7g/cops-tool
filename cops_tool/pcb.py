@@ -1,0 +1,5 @@
+from synapse.RF220 import GPIO_11, GPIO_14
+
+
+RESET = GPIO_11
+DISPLAY_CS = GPIO_14

@@ -1,1 +1,3 @@
 Pillow==2.7.0
+synapse-snappy-lib==1.4.2
+snap-compiler==1.0.0.post26

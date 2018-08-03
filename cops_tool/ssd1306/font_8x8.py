@@ -1,5 +1,5 @@
 """8x8 pixel font (7x7 usable pixels) based on Joystix font by typodermicfonts"""
-from SSD1306 import *
+from ssd1306 import *
 
 FONT_8X8 = (
     "\x00\x00\x7F\x41\x41\x7F\x00\x00",  # CUSTOM_00 (box)
