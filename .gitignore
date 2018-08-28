@@ -1,0 +1,28 @@
+nvparams.dat
+*.pyc
+*.log
+.idea/
+
+# Virtual Environment
+env/
+
+# Distribution / packaging
+.Python
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports
+.coverage
+fonthelper/test/results/*
+!fonthelper/test/results/.gitkeep
