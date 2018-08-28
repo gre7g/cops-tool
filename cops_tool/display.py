@@ -16,7 +16,7 @@ HEX = "0123456789abcdef"
 SIGNAL_LEVELS = (80, 60, 40, 20)
 
 # Globals:
-G_LAST_DISPLAY = "\x00"
+G_SAVED_DISPLAY = "\x00"
 G_DISPLAY_MODE = DMODE_LIST_3
 G_REDUCE_COUNTDOWN = 0
 G_SCROLL_POS = 0
@@ -33,7 +33,7 @@ def display_on_1s(t):
         G_REDUCE_COUNTDOWN -= 1
 
         if G_REDUCE_COUNTDOWN == 0:
-            display(G_LAST_DISPLAY, None)
+            display(G_SAVED_DISPLAY)
 
 
 def find_ideal_mode(num_nodes):
@@ -55,21 +55,21 @@ def find_ideal_mode(num_nodes):
         return DMODE_SCROLL_LIST
 
 
-def display(display_string, battery_level):
+def display(display_string):
     """Update the display.
 
     :param str display_string: See format, below
-    :param int|None battery_level: Battery level 0-11
     """
-    global G_DISPLAY_MODE, G_REDUCE_COUNTDOWN
+    global G_DISPLAY_MODE, G_REDUCE_COUNTDOWN, G_SAVED_DISPLAY
 
     # display_string format:
     # Offset | Width | Meaning
     #      0 |     1 | Selected item
-    #     5n |     1 | Signal strength (-dBm)
-    #   5n+1 |     1 | Recent message (1=yes, 0=no)
-    #   5n+2 |     3 | MAC address
-    num_nodes = (len(display_string) - 1) / 4
+    #      1 |     1 | Battery level (0-11)
+    #   5n+2 |     1 | Signal strength (-dBm)
+    #   5n+3 |     1 | Recent message (1=yes, 0=no)
+    #   5n+4 |     3 | MAC address
+    num_nodes = (len(display_string) - 2) / 5
     display_mode = G_DISPLAY_MODE
     ideal_mode = find_ideal_mode(num_nodes)
 
@@ -81,17 +81,18 @@ def display(display_string, battery_level):
     elif ideal_mode < display_mode:
         if G_REDUCE_COUNTDOWN < 0:
             G_REDUCE_COUNTDOWN = REDUCE_TIMEOUT
+            G_SAVED_DISPLAY = display_string
         elif G_REDUCE_COUNTDOWN == 0:
             display_mode = ideal_mode
     else:
         G_REDUCE_COUNTDOWN = -1
 
     if display_mode == DMODE_LIST_3:
-        redraw_3(display_string, battery_level, display_mode != G_DISPLAY_MODE)
+        redraw_3(display_string, display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_LIST_4:
         redraw_4(display_string, display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_LIST_6:
-        redraw_6(display_string, battery_level, display_mode != G_DISPLAY_MODE)
+        redraw_6(display_string, display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_LIST_8:
         redraw_8(display_string, display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_SCROLL_LIST:
@@ -132,8 +133,8 @@ def expand_node_entry(node_entry):
         return expanded + SIGNAL_CHAR[4]
 
 
-def redraw_3(display_string, battery_level, force_redraw):
-    battery_string = ("" if battery_level is None else BATTERY_CHARS[battery_level])
+def redraw_3(display_string, force_redraw):
+    battery_string = BATTERY_CHARS[ord(display_string[1])]
     if force_redraw:
         clear_ram()
         print_8x8("Neighbors:    " + battery_string)
@@ -141,45 +142,45 @@ def redraw_3(display_string, battery_level, force_redraw):
         set_xy(14, 0)
         print_8x8(battery_string)
 
-    num_nodes = (len(display_string) - 1) / 4
+    num_nodes = (len(display_string) - 2) / 5
 
     set_xy(14, 1)
-    print_8x8(expand_node_entry(display_string[1:6])[:-1] if num_nodes > 0 else "                ")
+    print_8x8(expand_node_entry(display_string[2:7])[:-1] if num_nodes > 0 else "                ")
     set_xy(14, 2)
     if num_nodes > 0:
-        print_8x8(expand_node_entry(display_string[6:11])[:-1] if num_nodes > 1 else "                ")
+        print_8x8(expand_node_entry(display_string[7:12])[:-1] if num_nodes > 1 else "                ")
     else:
         print_8x8("  (none yet)    ")
     set_xy(14, 1)
-    print_8x8(expand_node_entry(display_string[11:16])[:-1] if num_nodes > 2 else "                ")
+    print_8x8(expand_node_entry(display_string[12:17])[:-1] if num_nodes > 2 else "                ")
 
 
 def redraw_4(display_string, force_redraw):
     if force_redraw:
         clear_ram()
 
-    num_nodes = (len(display_string) - 1) / 4
+    num_nodes = (len(display_string) - 2) / 5
 
     for y in xrange(4):
         set_xy(14, y)
-        line = expand_node_entry(display_string[(y * 5) + 1:(y * 5) + 6])[:-1] if num_nodes > y else "                "
+        line = expand_node_entry(display_string[(y * 5) + 2:(y * 5) + 7])[:-1] if num_nodes > y else "                "
         print_8x8(line)
 
 
-def redraw_6(display_string, battery_level, force_redraw):
+def redraw_6(display_string, force_redraw):
     if force_redraw:
         clear_ram()
-        print_8x8("Neighbors:    " + BATTERY_CHARS[battery_level])
+        print_8x8("Neighbors:    " + BATTERY_CHARS[ord(display_string[1])])
     else:
         set_xy(14, 0)
-        print_8x8(BATTERY_CHARS[battery_level])
+        print_8x8(BATTERY_CHARS[ord(display_string[1])])
 
-    num_nodes = (len(display_string) - 1) / 4
+    num_nodes = (len(display_string) - 2) / 5
 
     for index in xrange(6):
         set_xy(0 if index < 3 else 9, (index % 3) + 1)
         if index < num_nodes:
-            text = expand_node_entry(display_string[(index * 5) + 1:(index * 5) + 6])
+            text = expand_node_entry(display_string[(index * 5) + 2:(index * 5) + 7])
             print_8x8(text[2:8] + text[-1])
         else:
             print_8x8("       ")
@@ -189,12 +190,12 @@ def redraw_8(display_string, force_redraw):
     if force_redraw:
         clear_ram()
 
-    num_nodes = (len(display_string) - 1) / 4
+    num_nodes = (len(display_string) - 2) / 5
 
     for index in xrange(8):
         set_xy(0 if index < 4 else 9, index % 4)
         if index < num_nodes:
-            text = expand_node_entry(display_string[(index * 5) + 1:(index * 5) + 6])
+            text = expand_node_entry(display_string[(index * 5) + 2:(index * 5) + 7])
             print_8x8(text[2:8] + text[-1])
         else:
             print_8x8("       ")
@@ -206,9 +207,9 @@ def redraw_scroll(display_string, force_redraw):
     if force_redraw:
         clear_ram()
 
-    num_nodes = (len(display_string) - 1) / 4
+    num_nodes = (len(display_string) - 2) / 5
 
-    selected = ord(G_LAST_DISPLAY[0])
+    selected = ord(G_SAVED_DISPLAY[0])
     if selected <= G_SCROLL_POS:
         G_SCROLL_POS = (selected - 1) if selected > 0 else 0
     if selected >= (G_SCROLL_POS + 3):
