@@ -267,6 +267,8 @@ def redraw_scroll(force_redraw):
     line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 2:(G_SCROLL_POS * 5) + 7])
     print_8x8(line[1:-1])
 
+    set_xy(0, 1)
+
     if (G_SCROLL_POS + 1) >= (num_nodes - 1):
         print_8x8("                ")
     else:
@@ -277,21 +279,25 @@ def redraw_scroll(force_redraw):
         line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 7:(G_SCROLL_POS * 5) + 12])
         print_8x8(line[1:-1])
 
+    set_xy(0, 2)
+
     if (G_SCROLL_POS + 2) >= (num_nodes - 1):
         print_8x8("                ")
     else:
-        if selected == (G_SCROLL_POS + 1):
+        if selected == (G_SCROLL_POS + 2):
             print_8x8(RIGHT_ARROW)
         else:
             print_8x8(DOWN_ARROW if selected == (num_nodes - 1) else " ")
         line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
         print_8x8(line[1:-1])
 
+    set_xy(0, 3)
+
     if (G_SCROLL_POS + 3) >= (num_nodes - 1):
         print_8x8("                ")
     else:
-        print_8x8(RIGHT_ARROW if selected == (G_SCROLL_POS + 1) else DOWN_ARROW)
-        line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
+        print_8x8(RIGHT_ARROW if selected == (G_SCROLL_POS + 3) else DOWN_ARROW)
+        line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 17:(G_SCROLL_POS * 5) + 22])
         print_8x8(line[1:-1])
 
     return DMODE_SCROLL_LIST
