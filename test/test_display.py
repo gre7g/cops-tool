@@ -591,3 +591,109 @@ class TestDisplay(TestCase):
             call.expand_node_entry('fffff'), call.print_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
+
+        # Up one
+        self.vm.globals.G_SAVED_DISPLAY = "\x04\x00aaaaabbbbbcccccdddddeeeeefffff"
+        self.assertEqual(self.vm.functions.redraw_scroll(False), 4)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_scroll(False),
+            call.set_xy(0, 0), call.print_8x8('\x11'),
+            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.print_8x8(' '),
+            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.print_8x8('\x13'),
+            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.print_8x8('\x12'),
+            call.expand_node_entry('fffff'), call.print_8x8(' abcdef -100dBm')
+        ])
+        self.vm.mocks.reset_mock()
+
+        # Up one
+        self.vm.globals.G_SAVED_DISPLAY = "\x03\x00aaaaabbbbbcccccdddddeeeeefffff"
+        self.assertEqual(self.vm.functions.redraw_scroll(False), 4)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_scroll(False),
+            call.set_xy(0, 0), call.print_8x8('\x11'),
+            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.print_8x8('\x13'),
+            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.print_8x8(' '),
+            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.print_8x8('\x12'),
+            call.expand_node_entry('fffff'), call.print_8x8(' abcdef -100dBm')
+        ])
+        self.vm.mocks.reset_mock()
+
+        # Reduce list
+        self.vm.globals.G_SAVED_DISPLAY = "\x03\x00aaaaabbbbbcccccdddddeeeee"
+        self.assertEqual(self.vm.functions.redraw_scroll(False), 4)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_scroll(False),
+            call.set_xy(0, 0), call.print_8x8('\x11'),
+            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.print_8x8(' '),
+            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.print_8x8('\x13'),
+            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.print_8x8('\x12'),
+            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm')
+        ])
+        self.vm.mocks.reset_mock()
+
+        # Reduce list
+        self.vm.globals.G_SAVED_DISPLAY = "\x03\x00aaaaabbbbbcccccddddd"
+        self.assertEqual(self.vm.functions.redraw_scroll(False), 4)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_scroll(False),
+            call.set_xy(0, 0), call.print_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.print_8x8(' '),
+            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.print_8x8(' '),
+            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.print_8x8('\x13'),
+            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm')
+        ])
+        self.vm.mocks.reset_mock()
+
+        # Reduce list
+        self.vm.globals.G_SAVED_DISPLAY = "\x03\x00aaaaabbbbbccccc"
+        self.assertEqual(self.vm.functions.redraw_scroll(False), 4)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_scroll(False),
+            call.set_xy(0, 0), call.print_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.print_8x8(' '),
+            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.print_8x8('\x13'),
+            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.print_8x8('                ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        # Reduce list
+        self.vm.globals.G_SAVED_DISPLAY = "\x03\x00aaaaabbbbb"
+        self.assertEqual(self.vm.functions.redraw_scroll(False), 4)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_scroll(False),
+            call.set_xy(0, 0), call.print_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.print_8x8('\x13'),
+            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.print_8x8('                '),
+            call.set_xy(0, 3), call.print_8x8('                ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        # Reduce list
+        self.vm.globals.G_SAVED_DISPLAY = "\x03\x00aaaaa"
+        self.assertEqual(self.vm.functions.redraw_scroll(False), 4)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_scroll(False),
+            call.set_xy(0, 0), call.print_8x8('\x13'),
+            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.print_8x8('                '),
+            call.set_xy(0, 2), call.print_8x8('                '),
+            call.set_xy(0, 3), call.print_8x8('                ')
+        ])
+        self.vm.mocks.reset_mock()

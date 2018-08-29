@@ -260,6 +260,9 @@ def redraw_scroll(force_redraw):
             G_SCROLL_POS = (selected - 3) if selected >= 3 else 0
         else:
             G_SCROLL_POS = (selected - 2) if selected >= 2 else 0
+    # Would scrolling up show more items?
+    while (G_SCROLL_POS > 0) and ((G_SCROLL_POS + 3) > (num_nodes - 1)):
+        G_SCROLL_POS -= 1
 
     set_xy(0, 0)
 
@@ -269,31 +272,31 @@ def redraw_scroll(force_redraw):
 
     set_xy(0, 1)
 
-    if (G_SCROLL_POS + 1) >= (num_nodes - 1):
+    if (G_SCROLL_POS + 1) > (num_nodes - 1):
         print_8x8("                ")
     else:
         if selected == (G_SCROLL_POS + 1):
             print_8x8(RIGHT_ARROW)
         else:
-            print_8x8(DOWN_ARROW if selected == (num_nodes - 1) else " ")
+            print_8x8(DOWN_ARROW if (G_SCROLL_POS + 1) == (num_nodes - 1) else " ")
         line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 7:(G_SCROLL_POS * 5) + 12])
         print_8x8(line[1:-1])
 
     set_xy(0, 2)
 
-    if (G_SCROLL_POS + 2) >= (num_nodes - 1):
+    if (G_SCROLL_POS + 2) > (num_nodes - 1):
         print_8x8("                ")
     else:
         if selected == (G_SCROLL_POS + 2):
             print_8x8(RIGHT_ARROW)
         else:
-            print_8x8(DOWN_ARROW if selected == (num_nodes - 1) else " ")
+            print_8x8(DOWN_ARROW if (G_SCROLL_POS + 2) == (num_nodes - 1) else " ")
         line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
         print_8x8(line[1:-1])
 
     set_xy(0, 3)
 
-    if (G_SCROLL_POS + 3) >= (num_nodes - 1):
+    if (G_SCROLL_POS + 3) > (num_nodes - 1):
         print_8x8("                ")
     else:
         print_8x8(RIGHT_ARROW if selected == (G_SCROLL_POS + 3) else DOWN_ARROW)
