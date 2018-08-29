@@ -359,3 +359,139 @@ class TestDisplay(TestCase):
             call.set_xy(9, 3), call.expand_node_entry('fffff'), call.print_8x8('abcdef#')
         ])
         self.vm.mocks.reset_mock()
+
+    @patch("snap_simulator.patch.redraw_3")
+    @patch("snap_simulator.patch.expand_node_entry", return_value="* abcdef -100dBm#")
+    @patch("snap_simulator.patch.clear_ram")
+    @patch("snap_simulator.patch.set_xy")
+    @patch("snap_simulator.patch.print_8x8")
+    def test_redraw_8(self, print_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
+        """Should be able to draw 0-8 nodes."""
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.redraw_3(True)
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaa"
+        self.vm.functions.redraw_8(True)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(True),
+            call.clear_ram(),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.print_8x8('       '),
+            call.set_xy(0, 2), call.print_8x8('       '),
+            call.set_xy(0, 3), call.print_8x8('       '),
+            call.set_xy(9, 0), call.print_8x8('       '),
+            call.set_xy(9, 1), call.print_8x8('       '),
+            call.set_xy(9, 2), call.print_8x8('       '),
+            call.set_xy(9, 3), call.print_8x8('       ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaabbbbb"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 2), call.print_8x8('       '),
+            call.set_xy(0, 3), call.print_8x8('       '),
+            call.set_xy(9, 0), call.print_8x8('       '),
+            call.set_xy(9, 1), call.print_8x8('       '),
+            call.set_xy(9, 2), call.print_8x8('       '),
+            call.set_xy(9, 3), call.print_8x8('       ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaabbbbbccccc"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 3), call.print_8x8('       '),
+            call.set_xy(9, 0), call.print_8x8('       '),
+            call.set_xy(9, 1), call.print_8x8('       '),
+            call.set_xy(9, 2), call.print_8x8('       '),
+            call.set_xy(9, 3), call.print_8x8('       ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaabbbbbcccccddddd"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 0), call.print_8x8('       '),
+            call.set_xy(9, 1), call.print_8x8('       '),
+            call.set_xy(9, 2), call.print_8x8('       '),
+            call.set_xy(9, 3), call.print_8x8('       ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaabbbbbcccccdddddeeeee"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 1), call.print_8x8('       '),
+            call.set_xy(9, 2), call.print_8x8('       '),
+            call.set_xy(9, 3), call.print_8x8('       ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaabbbbbcccccdddddeeeeefffff"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 2), call.print_8x8('       '),
+            call.set_xy(9, 3), call.print_8x8('       ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaabbbbbcccccdddddeeeeefffffggggg"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 2), call.expand_node_entry('ggggg'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 3), call.print_8x8('       ')
+        ])
+        self.vm.mocks.reset_mock()
+
+        self.vm.globals.G_SAVED_DISPLAY = "\x00\x00aaaaabbbbbcccccdddddeeeeefffffggggghhhhh"
+        self.vm.functions.redraw_8(False)
+        self.vm.mocks.assert_has_calls([
+            call.redraw_8(False),
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 2), call.expand_node_entry('ggggg'), call.print_8x8('abcdef#'),
+            call.set_xy(9, 3), call.expand_node_entry('hhhhh'), call.print_8x8('abcdef#')
+        ])
+        self.vm.mocks.reset_mock()
