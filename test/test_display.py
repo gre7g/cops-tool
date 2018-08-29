@@ -133,7 +133,7 @@ class TestDisplay(TestCase):
     def test_expand_node_entry(self):
         """Should expand a node entry to something human legible."""
         for signal_str, recent, mac, expected in [
-            (0, False, "\x01\x23\x45", "  012345   0dBm\x10"),
+            (0, False, "\x01\x23\x45", "  012345    0dBm\x10"),
             (1, True, "\x67\x89\xab", "* 6789ab   -1dBm\x10"),
             (9, False, "\xcd\xef\x01", "  cdef01   -9dBm\x10"),
             (10, False, "\x01\x23\x45", "  012345  -10dBm\x10"),

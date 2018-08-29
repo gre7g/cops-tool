@@ -129,14 +129,8 @@ def expand_node_entry(node_entry):
 
     # Right-justified level
     level = ord(node_entry[0])
-    if level >= 100:
-        expanded += str(-level)
-    elif level >= 10:
-        expanded += " " + str(-level)
-    else:
-        expanded += "  " + str(-level)
-
-    expanded += "dBm"
+    power = "   " + str(-level) + "dBm"
+    expanded += power[-7:]
 
     # Bars
     for index in xrange(4):
