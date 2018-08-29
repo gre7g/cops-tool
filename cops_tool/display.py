@@ -2,6 +2,7 @@ from ssd1306.ssd1306 import clear_ram
 from ssd1306.font_8x8 import print_8x8, set_xy, BATTERY_CHARS, SIGNAL_CHAR, UP_ARROW, DOWN_ARROW, RIGHT_ARROW
 
 # Constants:
+DMODE_NONE = -1
 DMODE_LIST_3 = 0
 DMODE_LIST_4 = 1
 DMODE_LIST_6 = 2
@@ -17,8 +18,8 @@ SIGNAL_LEVELS = (80, 60, 40, 20)
 
 # Globals:
 G_SAVED_DISPLAY = "\x00\x00"
-G_DISPLAY_MODE = DMODE_LIST_3
-G_REDUCE_COUNTDOWN = 0
+G_DISPLAY_MODE = DMODE_NONE
+G_REDUCE_COUNTDOWN = -1
 G_SCROLL_POS = 0
 
 
@@ -69,7 +70,8 @@ def display(display_string):
     #   5n+2 |     1 | Signal strength (-dBm)
     #   5n+3 |     1 | Recent message (1=yes, 0=no)
     #   5n+4 |     3 | MAC address
-    num_nodes = (len(display_string) - 2) / 5
+    G_SAVED_DISPLAY = display_string
+    num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
     display_mode = G_DISPLAY_MODE
     ideal_mode = find_ideal_mode(num_nodes)
 
@@ -81,26 +83,23 @@ def display(display_string):
     elif ideal_mode < display_mode:
         if G_REDUCE_COUNTDOWN < 0:
             G_REDUCE_COUNTDOWN = REDUCE_TIMEOUT
-            G_SAVED_DISPLAY = display_string
         elif G_REDUCE_COUNTDOWN == 0:
             display_mode = ideal_mode
     else:
         G_REDUCE_COUNTDOWN = -1
 
     if display_mode == DMODE_LIST_3:
-        redraw_3(display_string, display_mode != G_DISPLAY_MODE)
+        G_DISPLAY_MODE = redraw_3(display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_LIST_4:
-        redraw_4(display_string, display_mode != G_DISPLAY_MODE)
+        G_DISPLAY_MODE = redraw_4(display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_LIST_6:
-        redraw_6(display_string, display_mode != G_DISPLAY_MODE)
+        G_DISPLAY_MODE = redraw_6(display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_LIST_8:
-        redraw_8(display_string, display_mode != G_DISPLAY_MODE)
+        G_DISPLAY_MODE = redraw_8(display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_SCROLL_LIST:
-        redraw_scroll(display_string, display_mode != G_DISPLAY_MODE)
+        G_DISPLAY_MODE = redraw_scroll(display_mode != G_DISPLAY_MODE)
     elif display_mode == DMODE_TRACEROUTE:
         pass  # TODO
-
-    G_DISPLAY_MODE = display_mode
 
 
 def expand_node_entry(node_entry):
@@ -147,8 +146,10 @@ def expand_node_entry(node_entry):
         return expanded + SIGNAL_CHAR[4]
 
 
-def redraw_3(display_string, force_redraw):
-    battery_string = BATTERY_CHARS[ord(display_string[1])]
+def redraw_3(force_redraw):
+    num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
+
+    battery_string = BATTERY_CHARS[ord(G_SAVED_DISPLAY[1])]
     if force_redraw:
         clear_ram()
         print_8x8("Neighbors:    " + battery_string)
@@ -156,78 +157,94 @@ def redraw_3(display_string, force_redraw):
         set_xy(14, 0)
         print_8x8(battery_string)
 
-    num_nodes = (len(display_string) - 2) / 5
-
-    set_xy(14, 1)
-    print_8x8(expand_node_entry(display_string[2:7])[:-1] if num_nodes > 0 else "                ")
-    set_xy(14, 2)
+    set_xy(0, 1)
+    print_8x8(expand_node_entry(G_SAVED_DISPLAY[2:7])[:-1] if num_nodes > 0 else "                ")
+    set_xy(0, 2)
     if num_nodes > 0:
-        print_8x8(expand_node_entry(display_string[7:12])[:-1] if num_nodes > 1 else "                ")
+        print_8x8(expand_node_entry(G_SAVED_DISPLAY[7:12])[:-1] if num_nodes > 1 else "                ")
     else:
         print_8x8("  (none yet)    ")
-    set_xy(14, 1)
-    print_8x8(expand_node_entry(display_string[12:17])[:-1] if num_nodes > 2 else "                ")
+    set_xy(0, 3)
+    print_8x8(expand_node_entry(G_SAVED_DISPLAY[12:17])[:-1] if num_nodes > 2 else "                ")
+
+    return DMODE_LIST_3
 
 
-def redraw_4(display_string, force_redraw):
+def redraw_4(force_redraw):
+    num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
+
+    # No items?
+    if num_nodes == 0:
+        return redraw_3(True)
+
     if force_redraw:
         clear_ram()
-
-    num_nodes = (len(display_string) - 2) / 5
 
     for y in xrange(4):
-        set_xy(14, y)
-        line = expand_node_entry(display_string[(y * 5) + 2:(y * 5) + 7])[:-1] if num_nodes > y else "                "
+        set_xy(0, y)
+        line = expand_node_entry(G_SAVED_DISPLAY[(y * 5) + 2:(y * 5) + 7])[:-1] if num_nodes > y else "                "
         print_8x8(line)
 
+    return DMODE_LIST_4
 
-def redraw_6(display_string, force_redraw):
+
+def redraw_6(force_redraw):
+    num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
+
+    # No items?
+    if num_nodes == 0:
+        return redraw_3(True)
+
     if force_redraw:
         clear_ram()
-        print_8x8("Neighbors:    " + BATTERY_CHARS[ord(display_string[1])])
+        print_8x8("Neighbors:    " + BATTERY_CHARS[ord(G_SAVED_DISPLAY[1])])
     else:
         set_xy(14, 0)
-        print_8x8(BATTERY_CHARS[ord(display_string[1])])
-
-    num_nodes = (len(display_string) - 2) / 5
+        print_8x8(BATTERY_CHARS[ord(G_SAVED_DISPLAY[1])])
 
     for index in xrange(6):
         set_xy(0 if index < 3 else 9, (index % 3) + 1)
         if index < num_nodes:
-            text = expand_node_entry(display_string[(index * 5) + 2:(index * 5) + 7])
+            text = expand_node_entry(G_SAVED_DISPLAY[(index * 5) + 2:(index * 5) + 7])
             print_8x8(text[2:8] + text[-1])
         else:
             print_8x8("       ")
 
+    return DMODE_LIST_6
 
-def redraw_8(display_string, force_redraw):
+
+def redraw_8(force_redraw):
+    num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
+
+    # No items?
+    if num_nodes == 0:
+        return redraw_3(True)
+
     if force_redraw:
         clear_ram()
-
-    num_nodes = (len(display_string) - 2) / 5
 
     for index in xrange(8):
         set_xy(0 if index < 4 else 9, index % 4)
         if index < num_nodes:
-            text = expand_node_entry(display_string[(index * 5) + 2:(index * 5) + 7])
+            text = expand_node_entry(G_SAVED_DISPLAY[(index * 5) + 2:(index * 5) + 7])
             print_8x8(text[2:8] + text[-1])
         else:
             print_8x8("       ")
 
+    return DMODE_LIST_8
 
-def redraw_scroll(display_string, force_redraw):
+
+def redraw_scroll(force_redraw):
     global G_SCROLL_POS, G_DISPLAY_MODE
 
-    if force_redraw:
-        clear_ram()
-
-    num_nodes = (len(display_string) - 2) / 5
+    num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
 
     # No items?
     if num_nodes == 0:
-        G_DISPLAY_MODE = DMODE_LIST_3
-        redraw_3(display_string, True)
-        return
+        return redraw_3(True)
+
+    if force_redraw:
+        clear_ram()
 
     selected = ord(G_SAVED_DISPLAY[0])
     # Beyond the last item?
@@ -247,7 +264,7 @@ def redraw_scroll(display_string, force_redraw):
     set_xy(0, 0)
 
     print_8x8(UP_ARROW if selected > 0 else RIGHT_ARROW)
-    line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 2:(G_SCROLL_POS * 5) + 7])
+    line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 2:(G_SCROLL_POS * 5) + 7])
     print_8x8(line[1:-1])
 
     if (G_SCROLL_POS + 1) >= (num_nodes - 1):
@@ -257,7 +274,7 @@ def redraw_scroll(display_string, force_redraw):
             print_8x8(RIGHT_ARROW)
         else:
             print_8x8(DOWN_ARROW if selected == (num_nodes - 1) else " ")
-        line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 7:(G_SCROLL_POS * 5) + 12])
+        line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 7:(G_SCROLL_POS * 5) + 12])
         print_8x8(line[1:-1])
 
     if (G_SCROLL_POS + 2) >= (num_nodes - 1):
@@ -267,12 +284,14 @@ def redraw_scroll(display_string, force_redraw):
             print_8x8(RIGHT_ARROW)
         else:
             print_8x8(DOWN_ARROW if selected == (num_nodes - 1) else " ")
-        line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
+        line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
         print_8x8(line[1:-1])
 
     if (G_SCROLL_POS + 3) >= (num_nodes - 1):
         print_8x8("                ")
     else:
         print_8x8(RIGHT_ARROW if selected == (G_SCROLL_POS + 1) else DOWN_ARROW)
-        line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
+        line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
         print_8x8(line[1:-1])
+
+    return DMODE_SCROLL_LIST
