@@ -16,7 +16,7 @@ HEX = "0123456789abcdef"
 SIGNAL_LEVELS = (80, 60, 40, 20)
 
 # Globals:
-G_SAVED_DISPLAY = "\x00"
+G_SAVED_DISPLAY = "\x00\x00"
 G_DISPLAY_MODE = DMODE_LIST_3
 G_REDUCE_COUNTDOWN = 0
 G_SCROLL_POS = 0
@@ -104,6 +104,20 @@ def display(display_string):
 
 
 def expand_node_entry(node_entry):
+    """Expand a 5-byte node entry into a printable string.
+
+    :param str node_entry: 5-byte node entry string
+    :return: Printable string (see format, below)
+    :rtype: str
+    """
+    # Return format:
+    # Offset | Width | Meaning
+    #      0 |     1 | "*" if a recent message, " " otherwise
+    #      1 |     1 | Space
+    #      2 |     6 | MAC address
+    #      8 |     1 | Space
+    #      9 |     7 | Signal strength (ex: "-100dBm")
+    #     16 |     1 | Signal strength bars
     expanded = "* " if ord(node_entry[1]) else "  "
 
     # Hex address
@@ -202,17 +216,29 @@ def redraw_8(display_string, force_redraw):
 
 
 def redraw_scroll(display_string, force_redraw):
-    global G_SCROLL_POS
+    global G_SCROLL_POS, G_DISPLAY_MODE
 
     if force_redraw:
         clear_ram()
 
     num_nodes = (len(display_string) - 2) / 5
 
+    # No items?
+    if num_nodes == 0:
+        G_DISPLAY_MODE = DMODE_LIST_3
+        redraw_3(display_string, True)
+        return
+
     selected = ord(G_SAVED_DISPLAY[0])
+    # Beyond the last item?
+    if selected > (num_nodes - 1):
+        selected = num_nodes - 1
+    # Before the first displayed item?
     if selected <= G_SCROLL_POS:
         G_SCROLL_POS = (selected - 1) if selected > 0 else 0
+    # Selected the fourth row (or beyond)
     if selected >= (G_SCROLL_POS + 3):
+        # On the last item?
         if selected == (num_nodes - 1):
             G_SCROLL_POS = (selected - 3) if selected >= 3 else 0
         else:
@@ -221,4 +247,32 @@ def redraw_scroll(display_string, force_redraw):
     set_xy(0, 0)
 
     print_8x8(UP_ARROW if selected > 0 else RIGHT_ARROW)
+    line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 2:(G_SCROLL_POS * 5) + 7])
+    print_8x8(line[1:-1])
 
+    if (G_SCROLL_POS + 1) >= (num_nodes - 1):
+        print_8x8("                ")
+    else:
+        if selected == (G_SCROLL_POS + 1):
+            print_8x8(RIGHT_ARROW)
+        else:
+            print_8x8(DOWN_ARROW if selected == (num_nodes - 1) else " ")
+        line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 7:(G_SCROLL_POS * 5) + 12])
+        print_8x8(line[1:-1])
+
+    if (G_SCROLL_POS + 2) >= (num_nodes - 1):
+        print_8x8("                ")
+    else:
+        if selected == (G_SCROLL_POS + 1):
+            print_8x8(RIGHT_ARROW)
+        else:
+            print_8x8(DOWN_ARROW if selected == (num_nodes - 1) else " ")
+        line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
+        print_8x8(line[1:-1])
+
+    if (G_SCROLL_POS + 3) >= (num_nodes - 1):
+        print_8x8("                ")
+    else:
+        print_8x8(RIGHT_ARROW if selected == (G_SCROLL_POS + 1) else DOWN_ARROW)
+        line = expand_node_entry(display_string[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
+        print_8x8(line[1:-1])
