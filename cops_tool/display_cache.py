@@ -14,12 +14,12 @@ def flush_change(string):
     """
     global G_DISPLAY_CACHE
 
-    # Display it
-    print_8x8(string)
-
     # Update the cache
     offset = G_DRAW_X + (G_DRAW_Y * 16)
     G_DISPLAY_CACHE = G_DISPLAY_CACHE[:offset] + string + G_DISPLAY_CACHE[offset + len(string):]
+
+    # Display it
+    print_8x8(string)
 
 
 def cache_8x8(string):

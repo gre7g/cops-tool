@@ -16,7 +16,7 @@ HEX = "0123456789abcdef"
 SPACES_2 = " " * 2
 SPACES_7 = " " * 7
 SPACES_16 = " " * 16
-NONE_YET = "  (none yet)    "
+NONE_YET = "   (none yet)   "
 
 SIGNAL_LEVELS = (80, 60, 40, 20)
 

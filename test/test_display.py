@@ -163,7 +163,7 @@ class TestDisplay(TestCase):
             call.redraw_3(),
             call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x00\x01'),
             call.set_xy(0, 1), call.cache_8x8('                '),
-            call.set_xy(0, 2), call.cache_8x8('  (none yet)    '),
+            call.set_xy(0, 2), call.cache_8x8('   (none yet)   '),
             call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
