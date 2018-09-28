@@ -1,4 +1,3 @@
-from ssd1306.ssd1306 import clear_ram
 from ssd1306.font_8x8 import print_8x8, set_xy, BATTERY_CHARS, SIGNAL_CHAR, UP_ARROW, DOWN_ARROW, RIGHT_ARROW
 
 # Constants:
