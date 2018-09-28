@@ -17,7 +17,8 @@ class TestDisplay(TestCase):
         self.vm = SnappyVM(SOURCE_PATH)
 
     @patch("snap_simulator.patch.display")
-    def test_timer_hook(self, display):
+    @patch("snap_simulator.patch.cycle_batt_msg")
+    def test_timer_hook(self, cycle_batt_msg, display):
         """Should refresh the display when the timer runs out"""
         self.vm.globals.G_REDUCE_COUNTDOWN = 3
         self.vm.globals.G_SAVED_DISPLAY = "display string"
@@ -28,13 +29,111 @@ class TestDisplay(TestCase):
         self.vm.functions.display_on_1s(5000)
         self.vm.mocks.assert_has_calls([
             call.display_on_1s(1000),
+            call.cycle_batt_msg(),
             call.display_on_1s(2000),
+            call.cycle_batt_msg(),
             call.display_on_1s(3000),
             call.display('display string'),
+            call.cycle_batt_msg(),
             call.display_on_1s(4000),
-            call.display_on_1s(5000)
+            call.cycle_batt_msg(),
+            call.display_on_1s(5000),
+            call.cycle_batt_msg()
         ])
         self.assertEqual(self.vm.globals.G_REDUCE_COUNTDOWN, -1)
+
+    @patch("snap_simulator.patch.display")
+    @patch("snap_simulator.patch.set_xy")
+    @patch("snap_simulator.patch.cache_8x8")
+    def test_cycle_battery(self, cache_8x8, set_xy, display):
+        """Should be able to cycle through battery messages."""
+        self.vm.globals.G_BATTERY_LOW = "\x00"
+        self.vm.globals.G_SAVED_DISPLAY = "current state"
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.globals.G_BATTERY_LOW = "\x01"
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.globals.G_BATTERY_LOW = "\x01\x12\x34\x56\x78\x9a\xbc"
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.globals.G_BATTERY_LOW = "\x00\x12\x34\x56"
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.globals.G_BATTERY_LOW = "\x01\x12\x34\x56"
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.globals.G_BATTERY_LOW = "\x00\x12\x34\x56\x78\x9a\xbc"
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.functions.cycle_batt_msg()
+        self.vm.mocks.assert_has_calls([
+            # "\x00"
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.display('current state'),
+            # "\x01"
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('* LOW BATTERY! *'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('* LOW BATTERY! *'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.display('current state'),
+            # "\x01\x12\x34\x56\x78\x9a\xbc"
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('* LOW BATTERY! *'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('* LOW BATTERY! *'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 789abc'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 789abc'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('* LOW BATTERY! *'),
+            # "\x00\x12\x34\x56"
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            # "\x01\x12\x34\x56"
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('* LOW BATTERY! *'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('* LOW BATTERY! *'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            # "\x00\x12\x34\x56\x78\x9a\xbc"
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 789abc'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.display('current state'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 123456'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 789abc'),
+            call.cycle_batt_msg(), call.set_xy(0, 3), call.cache_8x8('LOW BATT: 789abc')
+        ])
 
     def test_find_ideal_mode(self):
         """Should be able to find the ideal number of nodes."""
@@ -46,7 +145,8 @@ class TestDisplay(TestCase):
     @patch("snap_simulator.patch.redraw_6", return_value=2)
     @patch("snap_simulator.patch.redraw_8", return_value=3)
     @patch("snap_simulator.patch.redraw_scroll", return_value=4)
-    def test_display(self, redraw_scroll, redraw_8, redraw_6, redraw_4, redraw_3):
+    @patch("snap_simulator.patch.cycle_batt_msg")
+    def test_display(self, cycle_batt_msg, redraw_scroll, redraw_8, redraw_6, redraw_4, redraw_3):
         """Should call the appropriate display method"""
 
         # Increasing display mode
@@ -102,27 +202,36 @@ class TestDisplay(TestCase):
             call.redraw_scroll(),
 
             call.display_on_1s(1000),
+            call.cycle_batt_msg(),
 
             call.display_on_1s(2000),
+            call.cycle_batt_msg(),
 
             call.display_on_1s(3000),
             call.redraw_8(),
+            call.cycle_batt_msg(),
 
             call.display_on_1s(4000),
+            call.cycle_batt_msg(),
 
             call.display('HH00000111112222233333'),
             call.redraw_8(),
 
             call.display_on_1s(5000),
+            call.cycle_batt_msg(),
 
             call.display_on_1s(6000),
+            call.cycle_batt_msg(),
 
             call.display_on_1s(7000),
             call.redraw_4(),
+            call.cycle_batt_msg(),
 
             call.display_on_1s(8000),
+            call.cycle_batt_msg(),
 
-            call.display_on_1s(9000)
+            call.display_on_1s(9000),
+            call.cycle_batt_msg()
         ])
 
         # Can change mode
