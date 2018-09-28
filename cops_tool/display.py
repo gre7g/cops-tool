@@ -17,6 +17,8 @@ SPACES_2 = " " * 2
 SPACES_7 = " " * 7
 SPACES_16 = " " * 16
 NONE_YET = "   (none yet)   "
+LOW_US = "* LOW BATTERY! *"
+LOW_NEIGHBOR = "LOW BATT: "
 
 SIGNAL_LEVELS = (80, 60, 40, 20)
 
@@ -25,6 +27,13 @@ G_SAVED_DISPLAY = "\x00\x00"
 G_DISPLAY_MODE = DMODE_NONE
 G_REDUCE_COUNTDOWN = -1
 G_SCROLL_POS = 0
+G_BATTERY_LOW = "\x00"
+G_BATTERY_MSG_STATE = 0  # 0=normal, 1=1st message, 2=2nd message...
+
+# G_BATTERY_LOW format:
+# Offset | Width | Notes
+#      0 |     1 | We're low (0=no, 1=yes)
+#   3n+1 |     3 | MAC address of a low neighbor
 
 
 def display_on_1s(t):
@@ -32,13 +41,29 @@ def display_on_1s(t):
 
     :param int t: Ignored
     """
-    global G_REDUCE_COUNTDOWN
+    global G_REDUCE_COUNTDOWN, G_BATTERY_MSG_STATE
 
     if G_REDUCE_COUNTDOWN >= 0:
         G_REDUCE_COUNTDOWN -= 1
 
         if G_REDUCE_COUNTDOWN == 0:
             display(G_SAVED_DISPLAY)
+
+    # How many messages to cycle around?
+    num_msgs = ord(G_BATTERY_LOW[0]) + (len(G_BATTERY_LOW) / 3) + 1
+    state = G_BATTERY_MSG_STATE / 2
+    if state >= num_msgs:
+        G_BATTERY_MSG_STATE = state = 0
+    if state == 0:
+        display(G_SAVED_DISPLAY)
+    else:
+        set_xy(0, 3)
+        mac_to_show = state - 1 - ord(G_BATTERY_LOW[0])
+        if mac_to_show < 0:
+            cache_8x8(LOW_US)
+        else:
+            cache_8x8(LOW_NEIGHBOR + mac_to_str(G_BATTERY_LOW[(mac_to_show * 3) + 1:(mac_to_show * 3) + 4]))
+    G_BATTERY_MSG_STATE += 1
 
 
 def find_ideal_mode(num_nodes):
@@ -106,6 +131,15 @@ def display(display_string):
         pass  # TODO
 
 
+def mac_to_str(mac):
+    string = ""
+    for i in xrange(3):
+        byte = ord(mac[i])
+        string += HEX[byte >> 4]
+        string += HEX[byte & 0x0f]
+    return string
+
+
 def expand_node_entry(node_entry):
     """Expand a 5-byte node entry into a printable string.
 
@@ -121,15 +155,7 @@ def expand_node_entry(node_entry):
     #      8 |     1 | Space
     #      9 |     7 | Signal strength (ex: "-100dBm")
     #     16 |     1 | Signal strength bars
-    expanded = "* " if ord(node_entry[1]) else "  "
-
-    # Hex address
-    for i in xrange(2, 5):
-        byte = ord(node_entry[i])
-        expanded += HEX[byte >> 4]
-        expanded += HEX[byte & 0x0f]
-
-    expanded += " "
+    expanded = ("* " if ord(node_entry[1]) else "  ") + mac_to_str(node_entry[2:5]) + " "
 
     # Right-justified level
     level = ord(node_entry[0])

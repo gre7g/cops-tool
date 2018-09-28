@@ -13,6 +13,12 @@ def on_startup():
 
     init_display(USE_SPI)
 
+
+def set_battery(string):
+    global G_BATTERY_LOW
+
+    G_BATTERY_LOW = string
+
     # print_8x8("abcdefghijklm")
     # set_xy(0, 1)
     # print_8x8("nopqrstuvwxyz")
