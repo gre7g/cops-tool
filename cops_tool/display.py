@@ -1,4 +1,5 @@
-from ssd1306.font_8x8 import print_8x8, set_xy, BATTERY_CHARS, SIGNAL_CHAR, UP_ARROW, DOWN_ARROW, RIGHT_ARROW
+from display_cache import cache_8x8
+from ssd1306.font_8x8 import set_xy, BATTERY_CHARS, SIGNAL_CHAR, UP_ARROW, DOWN_ARROW, RIGHT_ARROW
 
 # Constants:
 DMODE_NONE = -1
@@ -145,7 +146,7 @@ def expand_node_entry(node_entry):
 
 def print_neighbors():
     set_xy(0, 0)
-    print_8x8("Neighbors:    " + BATTERY_CHARS[ord(G_SAVED_DISPLAY[1])])
+    cache_8x8("Neighbors:    " + BATTERY_CHARS[ord(G_SAVED_DISPLAY[1])])
 
 
 def redraw_3():
@@ -154,14 +155,14 @@ def redraw_3():
     print_neighbors()
 
     set_xy(0, 1)
-    print_8x8(expand_node_entry(G_SAVED_DISPLAY[2:7])[:-1] if num_nodes > 0 else SPACES_16)
+    cache_8x8(expand_node_entry(G_SAVED_DISPLAY[2:7])[:-1] if num_nodes > 0 else SPACES_16)
     set_xy(0, 2)
     if num_nodes > 0:
-        print_8x8(expand_node_entry(G_SAVED_DISPLAY[7:12])[:-1] if num_nodes > 1 else SPACES_16)
+        cache_8x8(expand_node_entry(G_SAVED_DISPLAY[7:12])[:-1] if num_nodes > 1 else SPACES_16)
     else:
-        print_8x8(NONE_YET)
+        cache_8x8(NONE_YET)
     set_xy(0, 3)
-    print_8x8(expand_node_entry(G_SAVED_DISPLAY[12:17])[:-1] if num_nodes > 2 else SPACES_16)
+    cache_8x8(expand_node_entry(G_SAVED_DISPLAY[12:17])[:-1] if num_nodes > 2 else SPACES_16)
 
     return DMODE_LIST_3
 
@@ -176,7 +177,7 @@ def redraw_4():
     for y in xrange(4):
         set_xy(0, y)
         line = expand_node_entry(G_SAVED_DISPLAY[(y * 5) + 2:(y * 5) + 7])[:-1] if num_nodes > y else SPACES_16
-        print_8x8(line)
+        cache_8x8(line)
 
     return DMODE_LIST_4
 
@@ -194,11 +195,11 @@ def redraw_6():
         set_xy(0 if index < 3 else 9, (index % 3) + 1)
         if index < num_nodes:
             text = expand_node_entry(G_SAVED_DISPLAY[(index * 5) + 2:(index * 5) + 7])
-            print_8x8(text[2:8] + text[-1])
+            cache_8x8(text[2:8] + text[-1])
         else:
-            print_8x8(SPACES_7)
+            cache_8x8(SPACES_7)
         if index < 3:
-            print_8x8(SPACES_2)
+            cache_8x8(SPACES_2)
 
     return DMODE_LIST_6
 
@@ -214,11 +215,11 @@ def redraw_8():
         set_xy(0 if index < 4 else 9, index % 4)
         if index < num_nodes:
             text = expand_node_entry(G_SAVED_DISPLAY[(index * 5) + 2:(index * 5) + 7])
-            print_8x8(text[2:8] + text[-1])
+            cache_8x8(text[2:8] + text[-1])
         else:
-            print_8x8(SPACES_7)
+            cache_8x8(SPACES_7)
         if index < 4:
-            print_8x8(SPACES_2)
+            cache_8x8(SPACES_2)
 
     return DMODE_LIST_8
 
@@ -252,41 +253,41 @@ def redraw_scroll():
 
     set_xy(0, 0)
 
-    print_8x8(UP_ARROW if selected > 0 else RIGHT_ARROW)
+    cache_8x8(UP_ARROW if selected > 0 else RIGHT_ARROW)
     line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 2:(G_SCROLL_POS * 5) + 7])
-    print_8x8(line[1:-1])
+    cache_8x8(line[1:-1])
 
     set_xy(0, 1)
 
     if (G_SCROLL_POS + 1) > (num_nodes - 1):
-        print_8x8(SPACES_16)
+        cache_8x8(SPACES_16)
     else:
         if selected == (G_SCROLL_POS + 1):
-            print_8x8(RIGHT_ARROW)
+            cache_8x8(RIGHT_ARROW)
         else:
-            print_8x8(DOWN_ARROW if (G_SCROLL_POS + 1) == (num_nodes - 1) else " ")
+            cache_8x8(DOWN_ARROW if (G_SCROLL_POS + 1) == (num_nodes - 1) else " ")
         line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 7:(G_SCROLL_POS * 5) + 12])
-        print_8x8(line[1:-1])
+        cache_8x8(line[1:-1])
 
     set_xy(0, 2)
 
     if (G_SCROLL_POS + 2) > (num_nodes - 1):
-        print_8x8(SPACES_16)
+        cache_8x8(SPACES_16)
     else:
         if selected == (G_SCROLL_POS + 2):
-            print_8x8(RIGHT_ARROW)
+            cache_8x8(RIGHT_ARROW)
         else:
-            print_8x8(DOWN_ARROW if (G_SCROLL_POS + 2) == (num_nodes - 1) else " ")
+            cache_8x8(DOWN_ARROW if (G_SCROLL_POS + 2) == (num_nodes - 1) else " ")
         line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 12:(G_SCROLL_POS * 5) + 17])
-        print_8x8(line[1:-1])
+        cache_8x8(line[1:-1])
 
     set_xy(0, 3)
 
     if (G_SCROLL_POS + 3) > (num_nodes - 1):
-        print_8x8(SPACES_16)
+        cache_8x8(SPACES_16)
     else:
-        print_8x8(RIGHT_ARROW if selected == (G_SCROLL_POS + 3) else DOWN_ARROW)
+        cache_8x8(RIGHT_ARROW if selected == (G_SCROLL_POS + 3) else DOWN_ARROW)
         line = expand_node_entry(G_SAVED_DISPLAY[(G_SCROLL_POS * 5) + 17:(G_SCROLL_POS * 5) + 22])
-        print_8x8(line[1:-1])
+        cache_8x8(line[1:-1])
 
     return DMODE_SCROLL_LIST

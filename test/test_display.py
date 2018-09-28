@@ -154,17 +154,17 @@ class TestDisplay(TestCase):
     @patch("snap_simulator.patch.expand_node_entry", return_value="* abcdef -100dBm#")
     @patch("snap_simulator.patch.clear_ram")
     @patch("snap_simulator.patch.set_xy")
-    @patch("snap_simulator.patch.print_8x8")
-    def test_redraw_3(self, print_8x8, set_xy, clear_ram, expand_node_entry):
+    @patch("snap_simulator.patch.cache_8x8")
+    def test_redraw_3(self, cache_8x8, set_xy, clear_ram, expand_node_entry):
         """Should be able to draw 0-3 nodes."""
         self.vm.globals.G_SAVED_DISPLAY = "\x00\x00"
         self.assertEqual(self.vm.functions.redraw_3(), 0)
         self.vm.mocks.assert_has_calls([
             call.redraw_3(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x00\x01'),
-            call.set_xy(0, 1), call.print_8x8('                '),
-            call.set_xy(0, 2), call.print_8x8('  (none yet)    '),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x00\x01'),
+            call.set_xy(0, 1), call.cache_8x8('                '),
+            call.set_xy(0, 2), call.cache_8x8('  (none yet)    '),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -172,10 +172,10 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_3(), 0)
         self.vm.mocks.assert_has_calls([
             call.redraw_3(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x02\x01'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('                '),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x02\x01'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('                '),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -183,10 +183,10 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_3(), 0)
         self.vm.mocks.assert_has_calls([
             call.redraw_3(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x03\x01'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x03\x01'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -194,18 +194,18 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_3(), 0)
         self.vm.mocks.assert_has_calls([
             call.redraw_3(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x04\x01'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.print_8x8('* abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x04\x01'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.cache_8x8('* abcdef -100dBm')
         ])
 
     @patch("snap_simulator.patch.redraw_3", return_value=0)
     @patch("snap_simulator.patch.expand_node_entry", return_value="* abcdef -100dBm#")
     @patch("snap_simulator.patch.clear_ram")
     @patch("snap_simulator.patch.set_xy")
-    @patch("snap_simulator.patch.print_8x8")
-    def test_redraw_4(self, print_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
+    @patch("snap_simulator.patch.cache_8x8")
+    def test_redraw_4(self, cache_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
         """Should be able to draw 0-4 nodes."""
         self.vm.globals.G_SAVED_DISPLAY = "\x00\x00"
         self.assertEqual(self.vm.functions.redraw_4(), 0)
@@ -219,10 +219,10 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_4(), 1)
         self.vm.mocks.assert_has_calls([
             call.redraw_4(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8('                '),
-            call.set_xy(0, 2), call.print_8x8('                '),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8('                '),
+            call.set_xy(0, 2), call.cache_8x8('                '),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -230,10 +230,10 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_4(), 1)
         self.vm.mocks.assert_has_calls([
             call.redraw_4(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('                '),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('                '),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -241,10 +241,10 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_4(), 1)
         self.vm.mocks.assert_has_calls([
             call.redraw_4(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -252,10 +252,10 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_4(), 1)
         self.vm.mocks.assert_has_calls([
             call.redraw_4(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('* abcdef -100dBm'),
-            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('* abcdef -100dBm')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('* abcdef -100dBm'),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.cache_8x8('* abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -263,8 +263,8 @@ class TestDisplay(TestCase):
     @patch("snap_simulator.patch.expand_node_entry", return_value="* abcdef -100dBm#")
     @patch("snap_simulator.patch.clear_ram")
     @patch("snap_simulator.patch.set_xy")
-    @patch("snap_simulator.patch.print_8x8")
-    def test_redraw_6(self, print_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
+    @patch("snap_simulator.patch.cache_8x8")
+    def test_redraw_6(self, cache_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
         """Should be able to draw 0-6 nodes."""
         self.vm.globals.G_SAVED_DISPLAY = "\x00\x00"
         self.assertEqual(self.vm.functions.redraw_6(), 0)
@@ -278,13 +278,13 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_6(), 2)
         self.vm.mocks.assert_has_calls([
             call.redraw_6(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x05\x01'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(0, 3), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x05\x01'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -292,13 +292,13 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_6(), 2)
         self.vm.mocks.assert_has_calls([
             call.redraw_6(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x06\x01'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x06\x01'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -306,13 +306,13 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_6(), 2)
         self.vm.mocks.assert_has_calls([
             call.redraw_6(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x07\x01'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x07\x01'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -320,13 +320,13 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_6(), 2)
         self.vm.mocks.assert_has_calls([
             call.redraw_6(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x07\x08'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 1), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x07\x08'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 1), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -334,13 +334,13 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_6(), 2)
         self.vm.mocks.assert_has_calls([
             call.redraw_6(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x07\x09'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 1), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 2), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x07\x09'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 1), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 2), call.expand_node_entry('eeeee'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -348,13 +348,13 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_6(), 2)
         self.vm.mocks.assert_has_calls([
             call.redraw_6(),
-            call.set_xy(0, 0), call.print_8x8('Neighbors:    \x07\x0a'),
-            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 1), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 2), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 3), call.expand_node_entry('fffff'), call.print_8x8('abcdef#')
+            call.set_xy(0, 0), call.cache_8x8('Neighbors:    \x07\x0a'),
+            call.set_xy(0, 1), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 1), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 2), call.expand_node_entry('eeeee'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 3), call.expand_node_entry('fffff'), call.cache_8x8('abcdef#')
         ])
         self.vm.mocks.reset_mock()
 
@@ -362,8 +362,8 @@ class TestDisplay(TestCase):
     @patch("snap_simulator.patch.expand_node_entry", return_value="* abcdef -100dBm#")
     @patch("snap_simulator.patch.clear_ram")
     @patch("snap_simulator.patch.set_xy")
-    @patch("snap_simulator.patch.print_8x8")
-    def test_redraw_8(self, print_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
+    @patch("snap_simulator.patch.cache_8x8")
+    def test_redraw_8(self, cache_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
         """Should be able to draw 0-8 nodes."""
         self.vm.globals.G_SAVED_DISPLAY = "\x00\x00"
         self.assertEqual(self.vm.functions.redraw_8(), 0)
@@ -377,14 +377,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(0, 2), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(0, 3), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(9, 0), call.print_8x8('       '),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.cache_8x8('       '),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -392,14 +392,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(0, 3), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(9, 0), call.print_8x8('       '),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.cache_8x8('       '),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -407,14 +407,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.print_8x8('       '), call.print_8x8('  '),
-            call.set_xy(9, 0), call.print_8x8('       '),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.cache_8x8('       '), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.cache_8x8('       '),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -422,14 +422,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 0), call.print_8x8('       '),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.cache_8x8('       '),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -437,14 +437,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 1), call.print_8x8('       '),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 1), call.cache_8x8('       '),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -452,14 +452,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 2), call.print_8x8('       '),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 2), call.cache_8x8('       '),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -467,14 +467,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 2), call.expand_node_entry('ggggg'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 3), call.print_8x8('       ')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 2), call.expand_node_entry('ggggg'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 3), call.cache_8x8('       ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -482,14 +482,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_8(), 3)
         self.vm.mocks.assert_has_calls([
             call.redraw_8(),
-            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.print_8x8('abcdef#'), call.print_8x8('  '),
-            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 2), call.expand_node_entry('ggggg'), call.print_8x8('abcdef#'),
-            call.set_xy(9, 3), call.expand_node_entry('hhhhh'), call.print_8x8('abcdef#')
+            call.set_xy(0, 0), call.expand_node_entry('aaaaa'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 1), call.expand_node_entry('bbbbb'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 2), call.expand_node_entry('ccccc'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(0, 3), call.expand_node_entry('ddddd'), call.cache_8x8('abcdef#'), call.cache_8x8('  '),
+            call.set_xy(9, 0), call.expand_node_entry('eeeee'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 1), call.expand_node_entry('fffff'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 2), call.expand_node_entry('ggggg'), call.cache_8x8('abcdef#'),
+            call.set_xy(9, 3), call.expand_node_entry('hhhhh'), call.cache_8x8('abcdef#')
         ])
         self.vm.mocks.reset_mock()
 
@@ -497,8 +497,8 @@ class TestDisplay(TestCase):
     @patch("snap_simulator.patch.expand_node_entry", return_value="* abcdef -100dBm#")
     @patch("snap_simulator.patch.clear_ram")
     @patch("snap_simulator.patch.set_xy")
-    @patch("snap_simulator.patch.print_8x8")
-    def test_redraw_scroll(self, print_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
+    @patch("snap_simulator.patch.cache_8x8")
+    def test_redraw_scroll(self, cache_8x8, set_xy, clear_ram, expand_node_entry, redraw_3):
         """Should be able to draw a scrolling list of nodes."""
         self.vm.globals.G_SAVED_DISPLAY = "\x00\x00"
         self.assertEqual(self.vm.functions.redraw_scroll(), 0)
@@ -513,14 +513,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x13'),
-            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8(' '),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x12'),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x13'),
+            call.expand_node_entry('aaaaa'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8(' '),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x12'),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -529,14 +529,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8('\x13'),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8(' '),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x12'),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8('\x13'),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8(' '),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x12'),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -545,14 +545,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('\x13'),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x12'),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('\x13'),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x12'),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -561,14 +561,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('\x13'),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x12'),
-            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('\x13'),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x12'),
+            call.expand_node_entry('eeeee'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -577,14 +577,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8(' '),
-            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x13'),
-            call.expand_node_entry('fffff'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8(' '),
+            call.expand_node_entry('eeeee'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x13'),
+            call.expand_node_entry('fffff'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -593,14 +593,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('\x13'),
-            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x12'),
-            call.expand_node_entry('fffff'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('\x13'),
+            call.expand_node_entry('eeeee'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x12'),
+            call.expand_node_entry('fffff'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -609,14 +609,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8('\x13'),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8(' '),
-            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x12'),
-            call.expand_node_entry('fffff'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8('\x13'),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8(' '),
+            call.expand_node_entry('eeeee'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x12'),
+            call.expand_node_entry('fffff'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -625,14 +625,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('\x13'),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x12'),
-            call.expand_node_entry('eeeee'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('\x13'),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x12'),
+            call.expand_node_entry('eeeee'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -641,14 +641,14 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8(' '),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('\x13'),
-            call.expand_node_entry('ddddd'), call.print_8x8(' abcdef -100dBm')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8(' '),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('\x13'),
+            call.expand_node_entry('ddddd'), call.cache_8x8(' abcdef -100dBm')
         ])
         self.vm.mocks.reset_mock()
 
@@ -657,13 +657,13 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8(' '),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('\x13'),
-            call.expand_node_entry('ccccc'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8(' '),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('\x13'),
+            call.expand_node_entry('ccccc'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -672,12 +672,12 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x11'),
-            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8('\x13'),
-            call.expand_node_entry('bbbbb'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 2), call.print_8x8('                '),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.cache_8x8('\x11'),
+            call.expand_node_entry('aaaaa'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8('\x13'),
+            call.expand_node_entry('bbbbb'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 2), call.cache_8x8('                '),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
 
@@ -686,10 +686,10 @@ class TestDisplay(TestCase):
         self.assertEqual(self.vm.functions.redraw_scroll(), 4)
         self.vm.mocks.assert_has_calls([
             call.redraw_scroll(),
-            call.set_xy(0, 0), call.print_8x8('\x13'),
-            call.expand_node_entry('aaaaa'), call.print_8x8(' abcdef -100dBm'),
-            call.set_xy(0, 1), call.print_8x8('                '),
-            call.set_xy(0, 2), call.print_8x8('                '),
-            call.set_xy(0, 3), call.print_8x8('                ')
+            call.set_xy(0, 0), call.cache_8x8('\x13'),
+            call.expand_node_entry('aaaaa'), call.cache_8x8(' abcdef -100dBm'),
+            call.set_xy(0, 1), call.cache_8x8('                '),
+            call.set_xy(0, 2), call.cache_8x8('                '),
+            call.set_xy(0, 3), call.cache_8x8('                ')
         ])
         self.vm.mocks.reset_mock()
