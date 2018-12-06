@@ -344,6 +344,12 @@ def init_display(connection_type):
     set_invert_display(False)
 
 
+def low_power():
+    """Turn display off"""
+    turn_display_on(False)
+    enable_charge_pump(False)
+
+
 def connection_init(connection_type):
     """Initialize connection
 

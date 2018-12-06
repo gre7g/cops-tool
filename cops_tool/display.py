@@ -36,11 +36,8 @@ G_BATTERY_MSG_STATE = 0  # 0=normal, 1=1st message, 2=2nd message...
 #   3n+1 |     3 | MAC address of a low neighbor
 
 
-def display_on_1s(t):
-    """Handle 1s timer event.
-
-    :param int t: Ignored
-    """
+def display_on_1s():
+    """Handle 1s timer event"""
     global G_REDUCE_COUNTDOWN
 
     if G_REDUCE_COUNTDOWN >= 0:
@@ -161,6 +158,13 @@ def mac_to_str(mac):
         byte = ord(mac[i])
         string += HEX[byte >> 4]
         string += HEX[byte & 0x0f]
+    return string
+
+
+def num_to_hex(number):
+    string = ""
+    for shift in xrange(12, -1, -4):
+        string += HEX[(number >> shift) & 0x000f]
     return string
 
 
