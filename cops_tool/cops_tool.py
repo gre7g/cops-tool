@@ -6,7 +6,7 @@ from pcb import *
 from display import display_on_1s, num_to_hex
 from display_cache import cache_8x8, low_power
 from neighbor_mgmt import update_from_neighbor, display_neighbors, clear_not_heard_from
-from ssd1306.font_8x8 import set_xy, UP_ARROW, DOWN_ARROW, RIGHT_ARROW, INVERTED_HEX
+from ssd1306.font_8x8 import set_xy, UP_ARROW, DOWN_ARROW, RIGHT_ARROW, INVERTED_HEX, LEFT_ARROW
 from ssd1306.ssd1306 import init_display, USE_SPI
 
 # Constants:
@@ -40,24 +40,39 @@ STATE_MENU5 = 6
 STATE_MENU6 = 7
 STATE_MENU7 = 8
 STATE_MENU8 = 9
-STATE_PROBE = 10
-STATE_PASSIVE = 11
-STATE_INTERROGATE = 12
-STATE_SET_NV1 = 13
-STATE_SET_NV2 = 14
-STATE_SET_NV3 = 15
-STATE_SET_NV4 = 16
-STATE_SET_NV5 = 17
-STATE_SET_NV6 = 18
-STATE_SET_NV7 = 19
-STATE_SET_NV8 = 20
-STATE_SET_NV9 = 21
-STATE_SET_NV10 = 22
-STATE_SET_NV11 = 23
-STATE_SET_NV12 = 24
-STATE_SET_NV13 = 25
-STATE_SET_NV14 = 26
-STATE_SET_NV15 = 27
+STATE_MENU9 = 10
+STATE_PROBE = 11
+STATE_PASSIVE = 12
+STATE_INTERROGATE = 13
+STATE_SET_NV1 = 14
+STATE_SET_NV2 = 15
+STATE_SET_NV3 = 16
+STATE_SET_NV4 = 17
+STATE_SET_NV5 = 18
+STATE_SET_NV6 = 19
+STATE_SET_NV7 = 20
+STATE_SET_NV8 = 21
+STATE_SET_NV9 = 22
+STATE_SET_NV10 = 23
+STATE_SET_NV11 = 24
+STATE_SET_NV12 = 25
+STATE_SET_NV13 = 26
+STATE_SET_NV14 = 27
+STATE_SET_NV15 = 28
+STATE_SIMON1 = 29
+STATE_SIMON2 = 30
+STATE_SIMON3 = 31
+STATE_SIMON4 = 32
+STATE_SIMON5 = 33
+STATE_SIMON6 = 34
+STATE_SIMON7 = 35
+STATE_SIMON8 = 36
+STATE_SIMON9 = 37
+STATE_SIMON10 = 38
+STATE_SIMON11 = 39
+STATE_SIMON12 = 40
+STATE_SIMON13 = 41
+STATE_SIMON14 = 42
 
 # Globals:
 G_TIMESLOT_COUNTDOWN = 0
@@ -66,6 +81,8 @@ G_GENERAL_COUNTDOWN = 0
 G_BEST_LQ = None
 G_HEARD_FROM = ""
 G_NEED_REBOOT = False
+G_SEQUENCE = ""
+G_POSITION = 0
 
 
 @setHook(HOOK_STARTUP)
@@ -211,7 +228,7 @@ def general_countdown():
 
 
 def fsm_go(reason):
-    global G_FSM_STATE, G_GENERAL_COUNTDOWN, G_HEARD_FROM, G_NEED_REBOOT
+    global G_FSM_STATE, G_GENERAL_COUNTDOWN, G_HEARD_FROM, G_NEED_REBOOT, G_SEQUENCE, G_POSITION
 
     if reason == REASON_START:
         fsm_goto(STATE_WAKE_MESSAGE)
@@ -336,15 +353,17 @@ def fsm_go(reason):
         if reason == REASON_GOTO:
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
             set_xy(0, 0)
-            cache_8x8(UP_ARROW + " Probe mode    ")
+            cache_8x8(UP_ARROW + " Controller    ")
             set_xy(0, 1)
-            cache_8x8("  Controller    ")
-            set_xy(0, 2)
             cache_8x8("  Interrogate   ")
-            set_xy(0, 3)
+            set_xy(0, 2)
             cache_8x8(RIGHT_ARROW + " Set NV params ")
+            set_xy(0, 3)
+            cache_8x8(DOWN_ARROW + " Simon         ")
         elif reason == REASON_UP:
-            fsm_goto(STATE_MENU4)
+            fsm_goto(STATE_MENU9)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_MENU8)
         elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
             fsm_goto(STATE_SET_NV1)
         elif reason == REASON_1S_HOOK:
@@ -391,6 +410,48 @@ def fsm_go(reason):
             fsm_goto(STATE_MENU3)
         elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
             fsm_goto(STATE_PROBE)
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+
+    elif G_FSM_STATE == STATE_MENU8:
+        # SIMON OPTION
+        if reason == REASON_GOTO:
+            G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
+            set_xy(0, 0)
+            cache_8x8(UP_ARROW + " Controller    ")
+            set_xy(0, 1)
+            cache_8x8("  Interrogate   ")
+            set_xy(0, 2)
+            cache_8x8("  Set NV params ")
+            set_xy(0, 3)
+            cache_8x8(RIGHT_ARROW + " Simon         ")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_MENU5)
+        elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
+            fsm_goto(STATE_SIMON1)
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+
+    elif G_FSM_STATE == STATE_MENU9:
+        # INTERROGATE OPTION
+        if reason == REASON_GOTO:
+            G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
+            set_xy(0, 0)
+            cache_8x8(UP_ARROW + " Controller    ")
+            set_xy(0, 1)
+            cache_8x8(RIGHT_ARROW + " Interrogate   ")
+            set_xy(0, 2)
+            cache_8x8("  Set NV params ")
+            set_xy(0, 3)
+            cache_8x8(DOWN_ARROW + " Simon         ")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_MENU6)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_MENU5)
+        elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
+            fsm_goto(STATE_INTERROGATE)
         elif reason == REASON_1S_HOOK:
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
@@ -790,6 +851,164 @@ def fsm_go(reason):
             reboot()
         else:
             fsm_goto(STATE_MENU5)
+
+    elif G_FSM_STATE == STATE_SIMON1:
+        if reason == REASON_GOTO:
+            set_xy(0, 0)
+            cache_8x8("Watch!  3 2 1   ")
+            set_xy(0, 1)
+            cache_8x8("                ")
+            set_xy(0, 2)
+            cache_8x8("                ")
+            set_xy(0, 3)
+            cache_8x8("                ")
+            G_SEQUENCE = ""
+        elif reason == REASON_1S_HOOK:
+            fsm_goto(STATE_SIMON2)
+
+    elif G_FSM_STATE == STATE_SIMON2:
+        if reason == REASON_GOTO:
+            set_xy(8, 0)
+            cache_8x8(" ")
+        elif reason == REASON_1S_HOOK:
+            fsm_goto(STATE_SIMON3)
+
+    elif G_FSM_STATE == STATE_SIMON3:
+        if reason == REASON_GOTO:
+            set_xy(10, 0)
+            cache_8x8(" ")
+        elif reason == REASON_1S_HOOK:
+            fsm_goto(STATE_SIMON4)
+
+    elif G_FSM_STATE == STATE_SIMON4:
+        if reason == REASON_GOTO:
+            set_xy(0, 0)
+            cache_8x8("Watch!       ")
+        elif reason == REASON_1S_HOOK:
+            fsm_goto(STATE_SIMON5)
+
+    elif G_FSM_STATE == STATE_SIMON5:
+        G_SEQUENCE += chr(random() % 4)
+        G_POSITION = 0
+        fsm_goto(STATE_SIMON6)
+
+    elif G_FSM_STATE == STATE_SIMON6:
+        if reason == REASON_GOTO:
+            arrow = ord(G_SEQUENCE[G_POSITION])
+            if arrow == 0:
+                set_xy(7, 1)
+                cache_8x8(UP_ARROW)
+            elif arrow == 1:
+                set_xy(4, 2)
+                cache_8x8(LEFT_ARROW)
+            elif arrow == 2:
+                set_xy(10, 2)
+                cache_8x8(RIGHT_ARROW)
+            else:
+                set_xy(7, 3)
+                cache_8x8(DOWN_ARROW)
+        elif reason == REASON_1S_HOOK:
+            set_xy(7, 1)
+            cache_8x8(" ")
+            set_xy(4, 2)
+            cache_8x8("       ")
+            set_xy(7, 3)
+            cache_8x8(" ")
+            fsm_goto(STATE_SIMON7)
+
+    elif G_FSM_STATE == STATE_SIMON7:
+        if reason == REASON_1S_HOOK:
+            G_POSITION += 1
+            fsm_goto(STATE_SIMON6 if G_POSITION < len(G_SEQUENCE) else STATE_SIMON8)
+
+    elif G_FSM_STATE == STATE_SIMON8:
+        # if reason == REASON_1S_HOOK:
+            set_xy(0, 0)
+            cache_8x8("      ")
+            G_POSITION = 0
+            fsm_goto(STATE_SIMON9)
+
+    elif G_FSM_STATE == STATE_SIMON9:
+        if reason == REASON_1S_HOOK:
+            set_xy(0, 0)
+            cache_8x8("Repeat!")
+            G_GENERAL_COUNTDOWN = 2
+            fsm_goto(STATE_SIMON10)
+
+    elif G_FSM_STATE == STATE_SIMON10:
+        arrow = None
+        if reason == REASON_UP:
+            arrow = 0
+        elif reason == REASON_LEFT:
+            arrow = 1
+        elif reason == REASON_RIGHT:
+            arrow = 2
+        elif reason == REASON_DOWN:
+            arrow = 3
+        elif reason == REASON_1S_HOOK:
+            G_GENERAL_COUNTDOWN -= 1
+            if G_GENERAL_COUNTDOWN == 0:
+                fsm_goto(STATE_SIMON11)
+
+        if arrow is not None:
+            if arrow == ord(G_SEQUENCE[G_POSITION]):
+                if arrow == 0:
+                    set_xy(7, 1)
+                    cache_8x8(UP_ARROW)
+                elif arrow == 1:
+                    set_xy(4, 2)
+                    cache_8x8(LEFT_ARROW)
+                elif arrow == 2:
+                    set_xy(10, 2)
+                    cache_8x8(RIGHT_ARROW)
+                else:
+                    set_xy(7, 3)
+                    cache_8x8(DOWN_ARROW)
+                G_POSITION += 1
+                fsm_goto(STATE_SIMON12 if G_POSITION < len(G_SEQUENCE) else STATE_SIMON13)
+            else:
+                fsm_goto(STATE_SIMON11)
+
+    elif G_FSM_STATE == STATE_SIMON11:
+        if reason == REASON_GOTO:
+            set_xy(7, 2)
+            cache_8x8("X")
+            G_GENERAL_COUNTDOWN = 2
+        elif reason == REASON_1S_HOOK:
+            G_GENERAL_COUNTDOWN -= 1
+            if G_GENERAL_COUNTDOWN == 0:
+                fsm_goto(STATE_MENU8)
+
+    elif G_FSM_STATE == STATE_SIMON12:
+        if reason == REASON_1S_HOOK:
+            set_xy(7, 1)
+            cache_8x8(" ")
+            set_xy(4, 2)
+            cache_8x8("       ")
+            set_xy(7, 3)
+            cache_8x8(" ")
+            fsm_goto(STATE_SIMON10)
+
+    elif G_FSM_STATE == STATE_SIMON13:
+        if reason == REASON_1S_HOOK:
+            set_xy(0, 0)
+            cache_8x8("       ")
+            set_xy(7, 1)
+            cache_8x8(" ")
+            set_xy(4, 2)
+            cache_8x8("       ")
+            set_xy(7, 3)
+            cache_8x8("Good job!")
+            G_GENERAL_COUNTDOWN = 2
+            fsm_goto(STATE_SIMON14)
+
+    elif G_FSM_STATE == STATE_SIMON14:
+        if reason == REASON_1S_HOOK:
+            G_GENERAL_COUNTDOWN -= 1
+            if G_GENERAL_COUNTDOWN == 0:
+                set_xy(7, 3)
+                cache_8x8("         ")
+                fsm_goto(STATE_SIMON4)
 
 
 def print_invert(digit):
