@@ -106,14 +106,13 @@ def manage_battery(addr, low):
                 # No, remove it
                 G_BATTERY_LOW = G_BATTERY_LOW[:index] + G_BATTERY_LOW[index + 3:]
             return
-        # No, should it be?
-        elif low:
-            # Yes, sort it in
-            break
     else:
-        return
+        # Not found, should it be?
+        if not low:
+            # Matches, it's fine
+            return
 
-    # Sort in
+    # Mismatch, sort it in
     for index in xrange(1, len(G_BATTERY_LOW), 3):
         if sorts_before(addr, G_BATTERY_LOW[index:index + 3]) < 0:
             break
