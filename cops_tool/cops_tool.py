@@ -5,7 +5,7 @@ from built_ins import *
 from pcb import *
 from display import display_on_1s, num_to_hex
 from display_cache import cache_8x8, low_power
-from neighbor_mgmt import update_from_neighbor, display_neighbors
+from neighbor_mgmt import update_from_neighbor, display_neighbors, clear_not_heard_from
 from ssd1306.font_8x8 import set_xy, UP_ARROW, DOWN_ARROW, RIGHT_ARROW, INVERTED_HEX
 from ssd1306.ssd1306 import init_display, USE_SPI
 
@@ -49,6 +49,13 @@ STATE_SET_NV4 = 16
 STATE_SET_NV5 = 17
 STATE_SET_NV6 = 18
 STATE_SET_NV7 = 19
+STATE_SET_NV8 = 20
+STATE_SET_NV9 = 21
+STATE_SET_NV10 = 22
+STATE_SET_NV11 = 23
+STATE_SET_NV12 = 24
+STATE_SET_NV13 = 25
+STATE_SET_NV14 = 26
 
 # Globals:
 G_TIMESLOT_COUNTDOWN = 0
@@ -430,16 +437,15 @@ def fsm_go(reason):
             fsm_goto(STATE_MENU4)
 
     elif G_FSM_STATE == STATE_SET_NV1:
-        if reason == REASON_GOTO:
-            set_xy(0, 0)
-            cache_8x8("Channel: " + str(getChannel()) + "     ")
-            set_xy(0, 1)
-            cache_8x8("Network ID: " + num_to_hex(getNetId()))
-            set_xy(0, 2)
-            cache_8x8("FeatureBts: " + num_to_hex(loadNvParam(NV_FEATURE_BITS_ID)))
-            set_xy(0, 3)
-            cache_8x8("Encryption: " + str(loadNvParam(NV_AES128_ENABLE_ID)) + "   ")
-            fsm_goto(STATE_SET_NV2)
+        set_xy(0, 0)
+        cache_8x8("Channel: " + str(getChannel()) + "     ")
+        set_xy(0, 1)
+        cache_8x8("Network ID: " + num_to_hex(getNetId()))
+        set_xy(0, 2)
+        cache_8x8("FeatureBts: " + num_to_hex(loadNvParam(NV_FEATURE_BITS_ID)))
+        set_xy(0, 3)
+        cache_8x8("Encryption: " + ("On  " if loadNvParam(NV_AES128_ENABLE_ID) else "Off "))
+        fsm_goto(STATE_SET_NV2)
 
     elif G_FSM_STATE == STATE_SET_NV2:
         channel = getChannel()
@@ -595,6 +601,157 @@ def fsm_go(reason):
             set_xy(12, 1)
             cache_8x8(num_to_hex(net_id))
             fsm_goto(STATE_SET_NV7)
+
+    elif G_FSM_STATE == STATE_SET_NV7:
+        feature_bits = loadNvParam(NV_FEATURE_BITS_ID)
+        if feature_bits == 0x011f:
+            fsm_goto(STATE_SET_NV8)
+        elif feature_bits == 0x051f:
+            fsm_goto(STATE_SET_NV9)
+        elif feature_bits == 0x091f:
+            fsm_goto(STATE_SET_NV10)
+        else:
+            fsm_goto(STATE_SET_NV11)
+
+    elif G_FSM_STATE == STATE_SET_NV8:
+        if reason == REASON_GOTO:
+            set_xy(12, 2)
+            print_invert(0)
+            cache_8x8("1")
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+            else:
+                set_xy(12, 2)
+                if G_GENERAL_COUNTDOWN % 2:
+                    print_invert(0)
+                else:
+                    cache_8x8("0")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_SET_NV9)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_SET_NV11)
+        elif reason == REASON_PRESS:
+            set_xy(12, 2)
+            cache_8x8("0")
+            fsm_goto(STATE_SET_NV12)
+
+    elif G_FSM_STATE == STATE_SET_NV9:
+        if reason == REASON_GOTO:
+            set_xy(12, 2)
+            print_invert(0)
+            cache_8x8("5")
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+            else:
+                set_xy(12, 2)
+                if G_GENERAL_COUNTDOWN % 2:
+                    print_invert(0)
+                else:
+                    cache_8x8("0")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_SET_NV10)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_SET_NV8)
+        elif reason == REASON_PRESS:
+            set_xy(12, 2)
+            cache_8x8("0")
+            fsm_goto(STATE_SET_NV12)
+
+    elif G_FSM_STATE == STATE_SET_NV10:
+        if reason == REASON_GOTO:
+            set_xy(12, 2)
+            print_invert(0)
+            cache_8x8("9")
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+            else:
+                set_xy(12, 2)
+                if G_GENERAL_COUNTDOWN % 2:
+                    print_invert(0)
+                else:
+                    cache_8x8("0")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_SET_NV11)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_SET_NV9)
+        elif reason == REASON_PRESS:
+            set_xy(12, 2)
+            cache_8x8("0")
+            fsm_goto(STATE_SET_NV12)
+
+    elif G_FSM_STATE == STATE_SET_NV11:
+        if reason == REASON_GOTO:
+            set_xy(12, 2)
+            print_invert(0)
+            cache_8x8("d")
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+            else:
+                set_xy(12, 2)
+                if G_GENERAL_COUNTDOWN % 2:
+                    print_invert(0)
+                else:
+                    cache_8x8("0")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_SET_NV8)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_SET_NV10)
+        elif reason == REASON_PRESS:
+            set_xy(12, 2)
+            cache_8x8("0")
+            fsm_goto(STATE_SET_NV12)
+
+    elif G_FSM_STATE == STATE_SET_NV12:
+        if loadNvParam(NV_AES128_ENABLE_ID):
+            fsm_goto(STATE_SET_NV13)
+        else:
+            fsm_goto(STATE_SET_NV14)
+
+    elif G_FSM_STATE == STATE_SET_NV13:
+        if reason == REASON_GOTO:
+            set_xy(12, 3)
+            print_invert(0)
+            cache_8x8("n ")
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+            else:
+                set_xy(12, 3)
+                if G_GENERAL_COUNTDOWN % 2:
+                    print_invert(0)
+                else:
+                    cache_8x8("O")
+        elif (reason == REASON_UP) or (reason == REASON_DOWN):
+            fsm_goto(STATE_SET_NV14)
+        elif reason == REASON_PRESS:
+            set_xy(12, 3)
+            cache_8x8("O")
+            fsm_goto(STATE_MENU5)
+
+    elif G_FSM_STATE == STATE_SET_NV14:
+        if reason == REASON_GOTO:
+            set_xy(12, 3)
+            print_invert(0)
+            cache_8x8("ff")
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+            else:
+                set_xy(12, 3)
+                if G_GENERAL_COUNTDOWN % 2:
+                    print_invert(0)
+                else:
+                    cache_8x8("O")
+        elif (reason == REASON_UP) or (reason == REASON_DOWN):
+            fsm_goto(STATE_SET_NV13)
+        elif reason == REASON_PRESS:
+            set_xy(12, 3)
+            cache_8x8("O")
+            fsm_goto(STATE_MENU5)
 
 
 def print_invert(digit):
