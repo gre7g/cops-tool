@@ -1,4 +1,4 @@
-from synapse.nvparams import NV_FEATURE_BITS_ID, NV_AES128_ENABLE_ID
+from synapse.nvparams import NV_FEATURE_BITS_ID, NV_AES128_ENABLE_ID, NV_CHANNEL_ID, NV_NETWORK_ID, NV_AES128_KEY_ID
 from synapse.switchboard import DS_NULL, DS_STDIO, DS_PACKET_SERIAL
 
 from built_ins import *
@@ -17,6 +17,7 @@ PROBE_TIMESLOTS = 10
 MAX_TTL = 5
 INITIAL_TIMEOUT = 10
 CONTROLLER_TIMEOUT = 180
+CRYPTO_KEY = "\x7c\x8d\x48\x3c\xd0\x63\xfd\x94\xb1\xb6\x8d\x8f\x83\x1e\x17\xb1"
 
 # Reasons for entering FSM code:
 REASON_START = 0
@@ -56,6 +57,7 @@ STATE_SET_NV11 = 23
 STATE_SET_NV12 = 24
 STATE_SET_NV13 = 25
 STATE_SET_NV14 = 26
+STATE_SET_NV15 = 27
 
 # Globals:
 G_TIMESLOT_COUNTDOWN = 0
@@ -63,6 +65,7 @@ G_FSM_STATE = 0
 G_GENERAL_COUNTDOWN = 0
 G_BEST_LQ = None
 G_HEARD_FROM = ""
+G_NEED_REBOOT = False
 
 
 @setHook(HOOK_STARTUP)
@@ -88,6 +91,11 @@ def on_startup():
     # uniConnect(DS_NULL, DS_PACKET_SERIAL)
 
     fsm_go(REASON_START)
+
+    # Make sure the encryption key is set
+    if loadNvParam(NV_AES128_KEY_ID) != CRYPTO_KEY:
+        saveNvParam(NV_AES128_KEY_ID, CRYPTO_KEY)
+        reboot()
 
 
 def clear_screen():
@@ -203,7 +211,7 @@ def general_countdown():
 
 
 def fsm_go(reason):
-    global G_FSM_STATE, G_GENERAL_COUNTDOWN, G_HEARD_FROM
+    global G_FSM_STATE, G_GENERAL_COUNTDOWN, G_HEARD_FROM, G_NEED_REBOOT
 
     if reason == REASON_START:
         fsm_goto(STATE_WAKE_MESSAGE)
@@ -445,6 +453,7 @@ def fsm_go(reason):
         cache_8x8("FeatureBts: " + num_to_hex(loadNvParam(NV_FEATURE_BITS_ID)))
         set_xy(0, 3)
         cache_8x8("Encryption: " + ("On  " if loadNvParam(NV_AES128_ENABLE_ID) else "Off "))
+        G_NEED_REBOOT = False
         fsm_goto(STATE_SET_NV2)
 
     elif G_FSM_STATE == STATE_SET_NV2:
@@ -473,6 +482,7 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(9, 0)
             cache_8x8(str(channel) + " ")
+            saveNvParam(NV_CHANNEL_ID, channel)
             fsm_goto(STATE_SET_NV3)
 
     elif G_FSM_STATE == STATE_SET_NV3:
@@ -503,6 +513,7 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 1)
             cache_8x8(num_to_hex(net_id))
+            saveNvParam(NV_NETWORK_ID, net_id)
             fsm_goto(STATE_SET_NV7)
 
     elif G_FSM_STATE == STATE_SET_NV4:
@@ -536,6 +547,7 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 1)
             cache_8x8(num_to_hex(net_id))
+            saveNvParam(NV_NETWORK_ID, net_id)
             fsm_goto(STATE_SET_NV7)
 
     elif G_FSM_STATE == STATE_SET_NV5:
@@ -569,6 +581,7 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 1)
             cache_8x8(num_to_hex(net_id))
+            saveNvParam(NV_NETWORK_ID, net_id)
             fsm_goto(STATE_SET_NV7)
 
     elif G_FSM_STATE == STATE_SET_NV6:
@@ -600,6 +613,7 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 1)
             cache_8x8(num_to_hex(net_id))
+            saveNvParam(NV_NETWORK_ID, net_id)
             fsm_goto(STATE_SET_NV7)
 
     elif G_FSM_STATE == STATE_SET_NV7:
@@ -634,6 +648,9 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 2)
             cache_8x8("0")
+            if loadNvParam(NV_FEATURE_BITS_ID) != 0x011f:
+                saveNvParam(NV_FEATURE_BITS_ID, 0x011f)
+                G_NEED_REBOOT = True
             fsm_goto(STATE_SET_NV12)
 
     elif G_FSM_STATE == STATE_SET_NV9:
@@ -657,6 +674,9 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 2)
             cache_8x8("0")
+            if loadNvParam(NV_FEATURE_BITS_ID) != 0x051f:
+                saveNvParam(NV_FEATURE_BITS_ID, 0x051f)
+                G_NEED_REBOOT = True
             fsm_goto(STATE_SET_NV12)
 
     elif G_FSM_STATE == STATE_SET_NV10:
@@ -680,6 +700,9 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 2)
             cache_8x8("0")
+            if loadNvParam(NV_FEATURE_BITS_ID) != 0x091f:
+                saveNvParam(NV_FEATURE_BITS_ID, 0x091f)
+                G_NEED_REBOOT = True
             fsm_goto(STATE_SET_NV12)
 
     elif G_FSM_STATE == STATE_SET_NV11:
@@ -703,6 +726,9 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 2)
             cache_8x8("0")
+            if loadNvParam(NV_FEATURE_BITS_ID) != 0x0d1f:
+                saveNvParam(NV_FEATURE_BITS_ID, 0x0d1f)
+                G_NEED_REBOOT = True
             fsm_goto(STATE_SET_NV12)
 
     elif G_FSM_STATE == STATE_SET_NV12:
@@ -730,7 +756,10 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 3)
             cache_8x8("O")
-            fsm_goto(STATE_MENU5)
+            if loadNvParam(NV_AES128_ENABLE_ID) != 1:
+                saveNvParam(NV_AES128_ENABLE_ID, 1)
+                G_NEED_REBOOT = True
+            fsm_goto(STATE_SET_NV15)
 
     elif G_FSM_STATE == STATE_SET_NV14:
         if reason == REASON_GOTO:
@@ -751,6 +780,15 @@ def fsm_go(reason):
         elif reason == REASON_PRESS:
             set_xy(12, 3)
             cache_8x8("O")
+            if loadNvParam(NV_AES128_ENABLE_ID) != 0:
+                saveNvParam(NV_AES128_ENABLE_ID, 0)
+                G_NEED_REBOOT = True
+            fsm_goto(STATE_SET_NV15)
+
+    if G_FSM_STATE == STATE_SET_NV15:
+        if G_NEED_REBOOT:
+            reboot()
+        else:
             fsm_goto(STATE_MENU5)
 
 
