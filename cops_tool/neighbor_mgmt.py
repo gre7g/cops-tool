@@ -22,9 +22,18 @@ def display_neighbors(battery):
     G_SAVED_DISPLAY = G_SAVED_DISPLAY[0] + chr(battery) + G_SAVED_DISPLAY[2:]
     display()
 
-    # Mark all neighbors no bars and not recently contacted
-    for index in xrange(2, len(G_SAVED_DISPLAY), 5):
-        G_SAVED_DISPLAY = G_SAVED_DISPLAY[:index] + "\xff\x00" + G_SAVED_DISPLAY[index + 2:]
+
+def clear_not_heard_from(heard_from):
+    global G_SAVED_DISPLAY
+
+    # Mark all neighbors not heard from with no bars and not recently contacted
+    for i in xrange(2, len(G_SAVED_DISPLAY), 5):
+        addr = G_SAVED_DISPLAY[i + 2:i + 5]
+        for j in xrange(0, len(heard_from), 3):
+            if addr == heard_from[j:j + 3]:
+                break
+        else:
+            G_SAVED_DISPLAY = G_SAVED_DISPLAY[:i] + "\xff\x00" + G_SAVED_DISPLAY[i + 2:]
 
 
 def update_lru(addr):

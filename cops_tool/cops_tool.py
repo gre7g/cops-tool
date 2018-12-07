@@ -49,6 +49,7 @@ G_TIMESLOT_COUNTDOWN = 0
 G_FSM_STATE = 0
 G_GENERAL_COUNTDOWN = 0
 G_BEST_LQ = None
+G_HEARD_FROM = ""
 
 
 @setHook(HOOK_STARTUP)
@@ -153,7 +154,11 @@ def on_100ms(t):
 
 
 def report_in(lq, battery):
-    update_from_neighbor(rpcSourceAddr(), lq, battery <= BATTERY_LOW_LEVEL)
+    global G_HEARD_FROM
+
+    addr = rpcSourceAddr()
+    G_HEARD_FROM += addr
+    update_from_neighbor(addr, lq, battery <= BATTERY_LOW_LEVEL)
 
 
 def fsm_goto(state):
@@ -185,7 +190,7 @@ def general_countdown():
 
 
 def fsm_go(reason):
-    global G_FSM_STATE, G_GENERAL_COUNTDOWN
+    global G_FSM_STATE, G_GENERAL_COUNTDOWN, G_HEARD_FROM
 
     if reason == REASON_START:
         fsm_goto(STATE_WAKE_MESSAGE)
@@ -373,13 +378,17 @@ def fsm_go(reason):
         if reason == REASON_GOTO:
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
             display_neighbors(get_battery())
+            G_HEARD_FROM = ""
             mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
         elif reason == REASON_PRESS:
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
             display_neighbors(get_battery())
+            G_HEARD_FROM = ""
             mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
         elif reason == REASON_1S_HOOK:
             display_on_1s()
+            if G_GENERAL_COUNTDOWN == (CONTROLLER_TIMEOUT - (PROBE_TIMESLOTS / 10)):
+                clear_not_heard_from(G_HEARD_FROM)
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
         elif reason == REASON_LEFT:
@@ -389,12 +398,15 @@ def fsm_go(reason):
         if reason == REASON_GOTO:
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
             display_neighbors(get_battery())
+            G_HEARD_FROM = ""
             mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
         elif reason == REASON_1S_HOOK:
             display_on_1s()
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
             elif (G_GENERAL_COUNTDOWN % (PASSIVE_TIMESLOTS / 10)) == 0:
+                clear_not_heard_from(G_HEARD_FROM)
+                G_HEARD_FROM = ""
                 mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
         elif reason == REASON_LEFT:
             fsm_goto(STATE_MENU1)
