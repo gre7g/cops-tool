@@ -119,7 +119,7 @@ def manage_battery(addr, low):
     else:
         index = len(G_BATTERY_LOW)
 
-    G_BATTERY_LOW = G_BATTERY_LOW[:index] + addr + G_SAVED_DISPLAY[index:]
+    G_BATTERY_LOW = G_BATTERY_LOW[:index] + addr + G_BATTERY_LOW[index:]
 
 
 def update_from_neighbor(addr, lq_level, battery_low):

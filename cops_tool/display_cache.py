@@ -5,6 +5,7 @@
 from ssd1306.font_8x8 import print_8x8, set_xy, G_DRAW_X, G_DRAW_Y
 from ssd1306.ssd1306 import turn_display_on, enable_charge_pump
 
+# Globals:
 G_DISPLAY_CACHE = "\xff" * 16 * 4
 
 
