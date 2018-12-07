@@ -27,8 +27,8 @@ G_SAVED_DISPLAY = "\x00\x00"
 G_DISPLAY_MODE = DMODE_NONE
 G_REDUCE_COUNTDOWN = -1
 G_SCROLL_POS = 0
-G_BATTERY_LOW = "\x00"
 G_BATTERY_MSG_STATE = 0  # 0=normal, 1=1st message, 2=2nd message...
+G_BATTERY_LOW = "\x00"
 
 # G_BATTERY_LOW format:
 # Offset | Width | Notes
@@ -36,11 +36,8 @@ G_BATTERY_MSG_STATE = 0  # 0=normal, 1=1st message, 2=2nd message...
 #   3n+1 |     3 | MAC address of a low neighbor
 
 
-def display_on_1s(t):
-    """Handle 1s timer event.
-
-    :param int t: Ignored
-    """
+def display_on_1s():
+    """Handle 1s timer event"""
     global G_REDUCE_COUNTDOWN
 
     if G_REDUCE_COUNTDOWN >= 0:
@@ -103,21 +100,17 @@ def find_ideal_mode(num_nodes):
         return DMODE_SCROLL_LIST
 
 
-def display(display_string):
-    """Update the display.
-
-    :param str display_string: See format, below
-    """
+def display():
+    """Update the display"""
     global G_DISPLAY_MODE, G_REDUCE_COUNTDOWN, G_SAVED_DISPLAY
 
-    # display_string format:
+    # G_SAVED_DISPLAY format:
     # Offset | Width | Meaning
     #      0 |     1 | Selected item
     #      1 |     1 | Battery level (0-11)
     #   5n+2 |     1 | Signal strength (-dBm)
     #   5n+3 |     1 | Recent message (1=yes, 0=no)
     #   5n+4 |     3 | MAC address
-    G_SAVED_DISPLAY = display_string
     num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
     display_mode = G_DISPLAY_MODE
     ideal_mode = find_ideal_mode(num_nodes)
@@ -164,6 +157,13 @@ def mac_to_str(mac):
     return string
 
 
+def num_to_hex(number):
+    string = ""
+    for shift in xrange(12, -1, -4):
+        string += HEX[(number >> shift) & 0x000f]
+    return string
+
+
 def expand_node_entry(node_entry):
     """Expand a 5-byte node entry into a printable string.
 
@@ -183,7 +183,7 @@ def expand_node_entry(node_entry):
 
     # Right-justified level
     level = ord(node_entry[0])
-    power = "   " + str(-level) + "dBm"
+    power = ("   " + str(-level) + "dBm") if level < 255 else "          "
     expanded += power[-7:]
 
     # Bars
