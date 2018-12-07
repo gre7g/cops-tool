@@ -27,8 +27,8 @@ G_SAVED_DISPLAY = "\x00\x00"
 G_DISPLAY_MODE = DMODE_NONE
 G_REDUCE_COUNTDOWN = -1
 G_SCROLL_POS = 0
-G_BATTERY_LOW = "\x00"
 G_BATTERY_MSG_STATE = 0  # 0=normal, 1=1st message, 2=2nd message...
+G_BATTERY_LOW = "\x00"
 
 # G_BATTERY_LOW format:
 # Offset | Width | Notes
@@ -100,21 +100,17 @@ def find_ideal_mode(num_nodes):
         return DMODE_SCROLL_LIST
 
 
-def display(display_string):
-    """Update the display.
-
-    :param str display_string: See format, below
-    """
+def display():
+    """Update the display"""
     global G_DISPLAY_MODE, G_REDUCE_COUNTDOWN, G_SAVED_DISPLAY
 
-    # display_string format:
+    # G_SAVED_DISPLAY format:
     # Offset | Width | Meaning
     #      0 |     1 | Selected item
     #      1 |     1 | Battery level (0-11)
     #   5n+2 |     1 | Signal strength (-dBm)
     #   5n+3 |     1 | Recent message (1=yes, 0=no)
     #   5n+4 |     3 | MAC address
-    G_SAVED_DISPLAY = display_string
     num_nodes = (len(G_SAVED_DISPLAY) - 2) / 5
     display_mode = G_DISPLAY_MODE
     ideal_mode = find_ideal_mode(num_nodes)

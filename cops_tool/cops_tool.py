@@ -3,14 +3,15 @@ from synapse.switchboard import DS_NULL, DS_STDIO, DS_PACKET_SERIAL
 
 from built_ins import *
 from pcb import *
-from display import display, display_on_1s, num_to_hex
-from display_cache import cache_8x8
-from ssd1306.font_8x8 import set_xy, BATTERY_CHARS, UP_ARROW, DOWN_ARROW, RIGHT_ARROW
-from ssd1306.ssd1306 import init_display, USE_SPI, low_power
+from display import display_on_1s, num_to_hex
+from display_cache import cache_8x8, low_power
+from neighbor_mgmt import update_from_neighbor, display_neighbors
+from ssd1306.font_8x8 import set_xy, UP_ARROW, DOWN_ARROW, RIGHT_ARROW
+from ssd1306.ssd1306 import init_display, USE_SPI
 
 # Constants:
 ADC_THRESHOLDS = (879, 893, 908, 922, 937, 951, 965, 980, 994, 1009, 1023)
-LOW_LEVEL = 2
+BATTERY_LOW_LEVEL = 2
 PASSIVE_TIMESLOTS = 300
 PROBE_TIMESLOTS = 10
 MAX_TTL = 5
@@ -59,19 +60,14 @@ def on_startup():
     writePin(OLED_RESET, True)
 
     setPinDir(BUTTON_LEFT, False)
-    setPinPullup(BUTTON_LEFT, True)
     monitorPin(BUTTON_LEFT, True)
     setPinDir(BUTTON_RIGHT, False)
-    setPinPullup(BUTTON_RIGHT, True)
     monitorPin(BUTTON_RIGHT, True)
     setPinDir(BUTTON_UP, False)
-    setPinPullup(BUTTON_UP, True)
     monitorPin(BUTTON_UP, True)
     setPinDir(BUTTON_DOWN, False)
-    setPinPullup(BUTTON_DOWN, True)
     monitorPin(BUTTON_DOWN, True)
     setPinDir(BUTTON_PRESS, False)
-    setPinPullup(BUTTON_PRESS, True)
     monitorPin(BUTTON_PRESS, True)
 
     uniConnect(DS_NULL, DS_STDIO)
@@ -89,17 +85,16 @@ def clear_screen():
 @setHook(HOOK_GPIN)
 def on_gpin(pin_num, is_set):
     if is_set:
-        pass
-    elif pin_num == BUTTON_LEFT:
-        fsm_go(REASON_LEFT)
-    elif pin_num == BUTTON_RIGHT:
-        fsm_go(REASON_RIGHT)
-    elif pin_num == BUTTON_UP:
-        fsm_go(REASON_UP)
-    elif pin_num == BUTTON_DOWN:
-        fsm_go(REASON_DOWN)
-    elif pin_num == BUTTON_PRESS:
-        fsm_go(REASON_PRESS)
+        if pin_num == BUTTON_LEFT:
+            fsm_go(REASON_LEFT)
+        elif pin_num == BUTTON_RIGHT:
+            fsm_go(REASON_RIGHT)
+        elif pin_num == BUTTON_UP:
+            fsm_go(REASON_UP)
+        elif pin_num == BUTTON_DOWN:
+            fsm_go(REASON_DOWN)
+        elif pin_num == BUTTON_PRESS:
+            fsm_go(REASON_PRESS)
 
 
 @setHook(HOOK_STDOUT)
@@ -124,7 +119,7 @@ def get_battery():
     else:
         level = len(ADC_THRESHOLDS)
 
-    G_BATTERY_LOW = level <= LOW_LEVEL
+    G_BATTERY_LOW = ("\x01" if level <= BATTERY_LOW_LEVEL else "\x00") + G_BATTERY_LOW[1:]
 
     return level
 
@@ -139,12 +134,6 @@ def cops_report_in(slots):
     lq = getLq()
     if (G_BEST_LQ is None) or (lq < G_BEST_LQ):
         G_BEST_LQ = lq
-
-
-def set_battery(string):
-    global G_BATTERY_LOW
-
-    G_BATTERY_LOW = string
 
 
 @setHook(HOOK_1S)
@@ -164,7 +153,16 @@ def on_100ms(t):
 
 
 def report_in(lq, battery):
-    pass
+    if lq > 20:
+        bars = 4
+    elif lq > 40:
+        bars = 3
+    elif lq > 60:
+        bars = 2
+    else:
+        bars = 1
+
+    update_from_neighbor(rpcSourceAddr(), bars, battery <= BATTERY_LOW_LEVEL)
 
 
 def fsm_goto(state):
@@ -218,7 +216,7 @@ def fsm_go(reason):
                 fsm_goto(STATE_CONTROLLER)
 
         elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
-            fsm_go(STATE_MENU1)
+            fsm_goto(STATE_MENU1)
 
         set_xy(0, 3)
         cache_8x8("mode in " + str(G_GENERAL_COUNTDOWN) + " sec  ")
@@ -226,8 +224,9 @@ def fsm_go(reason):
     elif G_FSM_STATE == STATE_CONTROLLER:
         if reason == REASON_GOTO:
             low_power()
-        elif reason == REASON_UP:
-            fsm_goto(STATE_WAKE_MESSAGE)
+        elif reason == REASON_LEFT:
+            init_display(USE_SPI)
+            fsm_goto(STATE_MENU3)
 
     elif G_FSM_STATE == STATE_MENU1:
         # PASSIVE OPTION
@@ -256,7 +255,7 @@ def fsm_go(reason):
             set_xy(0, 0)
             cache_8x8("== MAIN MENU == ")
             set_xy(0, 1)
-            cache_8x8("  Passive mode  ")
+            cache_8x8(UP_ARROW + " Passive mode  ")
             set_xy(0, 2)
             cache_8x8(RIGHT_ARROW + " Probe mode    ")
             set_xy(0, 3)
@@ -342,13 +341,13 @@ def fsm_go(reason):
             set_xy(0, 0)
             cache_8x8(UP_ARROW + " Probe mode    ")
             set_xy(0, 1)
-            cache_8x8(RIGHT_ARROW + "  Controller    ")
+            cache_8x8(RIGHT_ARROW + " Controller    ")
             set_xy(0, 2)
             cache_8x8("  Interrogate   ")
             set_xy(0, 3)
             cache_8x8(DOWN_ARROW + " Set NV params ")
         elif reason == REASON_UP:
-            fsm_goto(STATE_MENU3)
+            fsm_goto(STATE_MENU2)
         elif reason == REASON_DOWN:
             fsm_goto(STATE_MENU4)
         elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
@@ -382,13 +381,14 @@ def fsm_go(reason):
     elif G_FSM_STATE == STATE_PROBE:
         if (reason == REASON_GOTO) or (reason == REASON_PRESS):
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
+            display_neighbors(get_battery())
             mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
         elif reason == REASON_1S_HOOK:
             display_on_1s()
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
         elif reason == REASON_LEFT:
-            fsm_goto(STATE_MENU1)
+            fsm_goto(STATE_MENU2)
 
     elif G_FSM_STATE == STATE_PASSIVE:
         if reason == REASON_GOTO:
@@ -413,7 +413,7 @@ def fsm_go(reason):
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
         elif reason == REASON_LEFT:
-            fsm_goto(STATE_MENU1)
+            fsm_goto(STATE_MENU4)
 
     elif G_FSM_STATE == STATE_SET_NV:
         if reason == REASON_GOTO:
@@ -430,4 +430,4 @@ def fsm_go(reason):
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
         elif reason == REASON_LEFT:
-            fsm_goto(STATE_MENU1)
+            fsm_goto(STATE_MENU5)
