@@ -481,7 +481,7 @@ def fsm_go(reason):
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
             display_neighbors(get_battery())
             G_HEARD_FROM = ""
-            mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
+            mcastRpc(1, MAX_TTL, "cops_report_in", PASSIVE_TIMESLOTS)
         elif reason == REASON_1S_HOOK:
             display_on_1s()
             if general_countdown():
@@ -489,7 +489,7 @@ def fsm_go(reason):
             elif (G_GENERAL_COUNTDOWN % (PASSIVE_TIMESLOTS / 10)) == 0:
                 clear_not_heard_from(G_HEARD_FROM)
                 G_HEARD_FROM = ""
-                mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
+                mcastRpc(1, MAX_TTL, "cops_report_in", PASSIVE_TIMESLOTS)
         elif reason == REASON_LEFT:
             fsm_goto(STATE_MENU1)
 
