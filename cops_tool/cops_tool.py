@@ -40,24 +40,26 @@ STATE_MENU5 = 6
 STATE_MENU6 = 7
 STATE_MENU7 = 8
 STATE_MENU8 = 9
-STATE_PROBE = 10
-STATE_PASSIVE = 11
-STATE_INTERROGATE = 12
-STATE_SET_NV1 = 13
-STATE_SET_NV2 = 14
-STATE_SET_NV3 = 15
-STATE_SET_NV4 = 16
-STATE_SET_NV5 = 17
-STATE_SET_NV6 = 18
-STATE_SET_NV7 = 19
-STATE_SET_NV8 = 20
-STATE_SET_NV9 = 21
-STATE_SET_NV10 = 22
-STATE_SET_NV11 = 23
-STATE_SET_NV12 = 24
-STATE_SET_NV13 = 25
-STATE_SET_NV14 = 26
-STATE_SET_NV15 = 27
+STATE_MENU9 = 10
+STATE_PROBE = 11
+STATE_PASSIVE = 12
+STATE_INTERROGATE = 13
+STATE_SET_NV1 = 14
+STATE_SET_NV2 = 15
+STATE_SET_NV3 = 16
+STATE_SET_NV4 = 17
+STATE_SET_NV5 = 18
+STATE_SET_NV6 = 19
+STATE_SET_NV7 = 20
+STATE_SET_NV8 = 21
+STATE_SET_NV9 = 22
+STATE_SET_NV10 = 23
+STATE_SET_NV11 = 24
+STATE_SET_NV12 = 25
+STATE_SET_NV13 = 26
+STATE_SET_NV14 = 27
+STATE_SET_NV15 = 28
+STATE_SIMON = 29
 
 # Globals:
 G_TIMESLOT_COUNTDOWN = 0
@@ -336,15 +338,17 @@ def fsm_go(reason):
         if reason == REASON_GOTO:
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
             set_xy(0, 0)
-            cache_8x8(UP_ARROW + " Probe mode    ")
+            cache_8x8(UP_ARROW + " Controller    ")
             set_xy(0, 1)
-            cache_8x8("  Controller    ")
-            set_xy(0, 2)
             cache_8x8("  Interrogate   ")
-            set_xy(0, 3)
+            set_xy(0, 2)
             cache_8x8(RIGHT_ARROW + " Set NV params ")
+            set_xy(0, 3)
+            cache_8x8(DOWN_ARROW + " Simon         ")
         elif reason == REASON_UP:
-            fsm_goto(STATE_MENU4)
+            fsm_goto(STATE_MENU9)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_MENU8)
         elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
             fsm_goto(STATE_SET_NV1)
         elif reason == REASON_1S_HOOK:
@@ -391,6 +395,48 @@ def fsm_go(reason):
             fsm_goto(STATE_MENU3)
         elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
             fsm_goto(STATE_PROBE)
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+
+    elif G_FSM_STATE == STATE_MENU8:
+        # SIMON OPTION
+        if reason == REASON_GOTO:
+            G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
+            set_xy(0, 0)
+            cache_8x8(UP_ARROW + " Controller    ")
+            set_xy(0, 1)
+            cache_8x8("  Interrogate   ")
+            set_xy(0, 2)
+            cache_8x8("  Set NV params ")
+            set_xy(0, 3)
+            cache_8x8(RIGHT_ARROW + " Simon         ")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_MENU5)
+        elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
+            fsm_goto(STATE_SIMON)
+        elif reason == REASON_1S_HOOK:
+            if general_countdown():
+                fsm_goto(STATE_CONTROLLER)
+
+    elif G_FSM_STATE == STATE_MENU9:
+        # INTERROGATE OPTION
+        if reason == REASON_GOTO:
+            G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
+            set_xy(0, 0)
+            cache_8x8(UP_ARROW + " Controller    ")
+            set_xy(0, 1)
+            cache_8x8(RIGHT_ARROW + " Interrogate   ")
+            set_xy(0, 2)
+            cache_8x8("  Set NV params ")
+            set_xy(0, 3)
+            cache_8x8(DOWN_ARROW + " Simon         ")
+        elif reason == REASON_UP:
+            fsm_goto(STATE_MENU6)
+        elif reason == REASON_DOWN:
+            fsm_goto(STATE_MENU5)
+        elif (reason == REASON_RIGHT) or (reason == REASON_PRESS):
+            fsm_goto(STATE_INTERROGATE)
         elif reason == REASON_1S_HOOK:
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
