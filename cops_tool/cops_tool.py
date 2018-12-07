@@ -71,7 +71,7 @@ def on_startup():
     monitorPin(BUTTON_PRESS, True)
 
     uniConnect(DS_NULL, DS_STDIO)
-    uniConnect(DS_NULL, DS_PACKET_SERIAL)
+    # uniConnect(DS_NULL, DS_PACKET_SERIAL)
 
     fsm_go(REASON_START)
 
@@ -153,16 +153,7 @@ def on_100ms(t):
 
 
 def report_in(lq, battery):
-    if lq > 20:
-        bars = 4
-    elif lq > 40:
-        bars = 3
-    elif lq > 60:
-        bars = 2
-    else:
-        bars = 1
-
-    update_from_neighbor(rpcSourceAddr(), bars, battery <= BATTERY_LOW_LEVEL)
+    update_from_neighbor(rpcSourceAddr(), lq, battery <= BATTERY_LOW_LEVEL)
 
 
 def fsm_goto(state):
@@ -379,7 +370,11 @@ def fsm_go(reason):
                 fsm_goto(STATE_CONTROLLER)
 
     elif G_FSM_STATE == STATE_PROBE:
-        if (reason == REASON_GOTO) or (reason == REASON_PRESS):
+        if reason == REASON_GOTO:
+            G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
+            display_neighbors(get_battery())
+            mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
+        elif reason == REASON_PRESS:
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
             display_neighbors(get_battery())
             mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
@@ -393,12 +388,13 @@ def fsm_go(reason):
     elif G_FSM_STATE == STATE_PASSIVE:
         if reason == REASON_GOTO:
             G_GENERAL_COUNTDOWN = CONTROLLER_TIMEOUT
+            display_neighbors(get_battery())
             mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
         elif reason == REASON_1S_HOOK:
             display_on_1s()
             if general_countdown():
                 fsm_goto(STATE_CONTROLLER)
-            elif (G_GENERAL_COUNTDOWN % PASSIVE_TIMESLOTS) == 0:
+            elif (G_GENERAL_COUNTDOWN % (PASSIVE_TIMESLOTS / 10)) == 0:
                 mcastRpc(1, MAX_TTL, "cops_report_in", PROBE_TIMESLOTS)
         elif reason == REASON_LEFT:
             fsm_goto(STATE_MENU1)

@@ -1,3 +1,4 @@
+from built_ins import *
 from display import G_SAVED_DISPLAY, G_BATTERY_LOW, display
 
 # Constants:
@@ -23,7 +24,7 @@ def display_neighbors(battery):
 
     # Mark all neighbors no bars and not recently contacted
     for index in xrange(2, len(G_SAVED_DISPLAY), 5):
-        G_SAVED_DISPLAY = G_SAVED_DISPLAY[:index] + "\x00\x00" + G_SAVED_DISPLAY[index + 2:]
+        G_SAVED_DISPLAY = G_SAVED_DISPLAY[:index] + "\xff\x00" + G_SAVED_DISPLAY[index + 2:]
 
 
 def update_lru(addr):
@@ -62,11 +63,10 @@ def delete_oldest():
 
 
 def sort_in_new(lq, addr):
-    global G_SAVED_DISPLAY, G_LRU_LIST
+    global G_SAVED_DISPLAY
 
-    G_LRU_LIST = addr + G_LRU_LIST
     for index in xrange(2, len(G_SAVED_DISPLAY), 5):
-        if sorts_before(addr, G_LRU_LIST[index + 2:index + 5]) < 0:
+        if sorts_before(addr, G_SAVED_DISPLAY[index + 2:index + 5]) < 0:
             break
     else:
         index = len(G_SAVED_DISPLAY)
@@ -129,8 +129,8 @@ def update_from_neighbor(addr, lq_level, battery_low):
             # No, delete the oldest from the LRU
             delete_oldest()
 
-    # Sort in new record
-    sort_in_new(lq_level, addr)
+        # Sort in new record
+        sort_in_new(lq_level, addr)
 
     # Update battery status
     manage_battery(addr, battery_low)

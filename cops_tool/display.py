@@ -183,7 +183,7 @@ def expand_node_entry(node_entry):
 
     # Right-justified level
     level = ord(node_entry[0])
-    power = "   " + str(-level) + "dBm"
+    power = ("   " + str(-level) + "dBm") if level < 255 else "          "
     expanded += power[-7:]
 
     # Bars
